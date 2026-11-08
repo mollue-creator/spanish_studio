@@ -124,6 +124,20 @@ nav.tabbar button.active .ic{filter:none; opacity:1;}
 .overlay-box ol{margin:8px 0 8px 20px;}
 #toast{position:fixed; left:50%; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 16px); transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 16px; border-radius:12px; font-size:14px; z-index:200; max-width:88vw; opacity:0; pointer-events:none; transition:opacity .2s; line-height:1.5;}
 #toast.show{opacity:1;}
+/* 형광펜 */
+mark.hl{color:inherit; border-radius:3px; padding:1px 0; cursor:pointer; -webkit-box-decoration-break:clone; box-decoration-break:clone;}
+mark.hl sup{font-size:10px; margin-left:1px; opacity:.6;}
+.hl-y{background:#ffe680;} .hl-g{background:#b6ecb9;} .hl-b{background:#b3dcfb;} .hl-p{background:#e6c8f5;} .hl-o{background:#ffd0a6;}
+mark.hl.flash{outline:3px solid var(--ink); transition:outline .3s;}
+#hlBar{display:none; position:fixed; left:0; right:0; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom)); z-index:25; background:rgba(255,255,255,.97); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-top:1px solid var(--line); padding:6px 10px 8px;}
+#hlBar.show{display:block;}
+body.hl-on{padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 96px);}
+.hl-hint{font-size:12px; color:var(--sub); text-align:center; margin-bottom:6px; line-height:1.4;}
+.hl-row{display:flex; gap:5px; max-width:760px; margin:0 auto;}
+.hl-sw{flex:1; min-width:0; border:2px solid transparent; border-radius:10px; padding:8px 2px; font-size:11px; font-weight:700; color:var(--ink); cursor:pointer; line-height:1.2; font-family:inherit;}
+.hl-sw span{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.hl-sw.on{border-color:var(--ink); box-shadow:0 2px 6px rgba(0,0,0,.15);}
+.hl-sw.done{flex:0 0 auto; padding:8px 10px; background:var(--ink); color:#fff;}
 footer{text-align:center; color:var(--sub); font-size:12px; padding:10px 0 20px;}
 @media (min-width:800px){ main{padding-top:24px;} }
 </style>
@@ -150,6 +164,7 @@ footer{text-align:center; color:var(--sub); font-size:12px; padding:10px 0 20px;
   <section class="panel" id="panel-write"></section>
   <section class="panel" id="panel-record"></section>
 </main>
+<div id="hlBar"></div>
 <nav class="tabbar">
   <button data-tab="today" class="active"><span class="ic">☀️</span>오늘</button>
   <button data-tab="practice"><span class="ic">🎧</span>연습</button>

@@ -1,7 +1,7 @@
 /* 문장장 스튜디오 v3 — 스페인어 전용 PWA
    오늘(SRS) · 연습(받아쓰기/말하기/드릴/롤플레이) · 읽기(주간 시사 팩) · 쓰기(일기 + Claude 첨삭) · 기록 */
 'use strict';
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.3.0';
 const LS_KEY = 'estudio_v3';
 const LEVELS = ['B1', 'B2', 'C1'];
 const INTERVALS = [0, 1, 3, 7, 16, 35, 80];
@@ -31,6 +31,7 @@ function normState(st) {
   st.journal = Array.isArray(st.journal) ? st.journal : [];
   st.read = st.read || {};
   st.draft = st.draft || null;
+  st.hl = Array.isArray(st.hl) ? st.hl : []; st.hlLabels = st.hlLabels || {};
   for (const id in st.prog) { const p = st.prog[id]; p.hist = p.hist || {}; MODES.forEach(m => { if (!p.hist[m]) p.hist[m] = []; }); }
   st.ver = 3; return st;
 }
@@ -423,10 +424,11 @@ function glossTip(i) { const g = rdView.art.glossary[i]; toast(`<b>${esc(g.w)}</
 function renderRead() {
   const el = $('panel-read');
   if (!PACKS.index) { el.innerHTML = PACKS.error ? `<div class="card empty">${PACKS.error}<br><br><button class="ghost" onclick="loadPackIndex()">다시 시도</button></div>` : '<div class="card empty">기사 팩 불러오는 중…</div>'; return; }
+  if (rdView.hlList) { renderHLList(el); hlBarUpdate(); return; }
   if (rdView.art) return renderArticle(el);
   const pack = rdView.pack || PACKS.latest;
   if (!pack) { el.innerHTML = '<div class="card empty">아직 기사 팩이 없어요.</div>'; return; }
-  let h = `<h2 class="sec">📰 ${esc(pack.title)}</h2><div class="sub" style="margin:0 4px 12px">${esc(pack.intro || '')}</div>`;
+  let h = `<div class="pill-group" style="justify-content:flex-end"><button class="ghost sm" onclick="rdView.hlList=true;renderRead()">🖍️ 형광펜 모음 (${S.hl.length})</button></div><h2 class="sec">📰 ${esc(pack.title)}</h2><div class="sub" style="margin:0 4px 12px">${esc(pack.intro || '')}</div>`;
   h += pack.articles.map(a => {
     const r = S.read[a.id] || {};
     return `<div class="list-item" onclick="openArticle('${a.id}')"><div class="meta-row" style="margin-bottom:6px"><span class="tag red">${esc(a.topic)}</span><span class="tag">${esc(a.level || 'B2')}</span>${r.done ? '<span class="tag green">✓ 읽음' + (r.quiz != null ? ' · ' + r.quiz + '%' : '') + '</span>' : ''}${r.wrote ? '<span class="tag green">✍️ 씀</span>' : ''}</div>
@@ -436,6 +438,7 @@ function renderRead() {
     h += `<h2 class="sec">지난 팩</h2>` + PACKS.index.map(p => `<div class="list-item" onclick="openPack('${p.id}')"><span class="t">${esc(p.title)}</span>${pack.id === p.id ? ' <span class="tag">보는 중</span>' : ''}</div>`).join('');
   }
   el.innerHTML = h;
+  hlBarUpdate();
 }
 function renderArticle(el) {
   const a = rdView.art; const r = S.read[a.id] || {};
@@ -445,7 +448,7 @@ function renderArticle(el) {
   h += `<div class="card article"><div class="meta-row"><span class="tag red">${esc(a.topic)}</span><span class="tag">${esc(a.level || 'B2')}</span>${a.words ? '<span class="tag">' + a.words + '단어</span>' : ''}</div>
     <h3>${esc(a.title)}</h3><div class="src">출처: <a href="${esc(a.source.url)}" target="_blank" rel="noopener">${esc(a.source.name)} · ${esc(a.source.date)}</a> 원문을 B2 수준으로 다시 쓴 학습용 글이에요.</div>`;
   if (rdView.showKo && a.summary_ko) h += `<div class="task-box" style="margin-top:12px">${esc(a.summary_ko)}</div>`;
-  h += `<div style="margin-top:16px">` + a.paragraphs.map((p, i) => `<p class="para">${markGlossary(p, a.glossary)} <button class="speak-btn" onclick="speak(rdView.art.paragraphs[${i}])">🔊</button></p>`).join('') + `</div>${rateRow()}</div>`;
+  h += `<div style="margin-top:16px" id="artBody">` + a.paragraphs.map((p, i) => `<p class="para"><span class="ptext" data-p="${i}">${renderParaHTML(a, i)}</span> <button class="speak-btn" onclick="speak(rdView.art.paragraphs[${i}])">🔊</button></p>`).join('') + `</div>${rateRow()}</div>`;
   if (a.glossary && a.glossary.length) h += `<div class="card"><b>어휘</b> <span class="sub">(본문 밑줄 단어를 눌러도 보여요)</span><div class="detail">` + a.glossary.map(g => `<b>${esc(g.w)}</b> — ${esc(g.ko)}`).join('<br>') + `</div></div>`;
   if (a.expressions && a.expressions.length) {
     h += `<div class="card"><b>가져갈 표현</b> <span class="sub">카드로 만들면 '오늘' 복습에 나와요</span>` + a.expressions.map((x, i) => {
@@ -470,6 +473,8 @@ function renderArticle(el) {
     <div class="btn-row"><button class="big gA" onclick="startWriting('opinion','${a.id}')">이 주제로 의견문 쓰기</button></div></div>`;
   h += `<div class="btn-row" style="margin-bottom:10px">${r.done ? '<span class="tag green" style="padding:10px 14px">✓ 읽기 완료</span>' : `<button class="big g3" onclick="markRead()">다 읽었어요</button>`}</div>`;
   el.innerHTML = h;
+  $('artBody').addEventListener('click', hlArticleClick);
+  hlBarUpdate();
 }
 function answerQ(qi2, oi) {
   rdView.quiz[qi2] = oi; const a = rdView.art;
@@ -487,6 +492,170 @@ function markRead() { const r = S.read[rdView.art.id] = S.read[rdView.art.id] ||
 function exprCard(x, a) { return mkMine(x.es, x.ko, x.note || '', '기사 · ' + a.title.slice(0, 30), x.note || ''); }
 function addExpr(i) { const a = rdView.art; const n = addMine([exprCard(a.expressions[i], a)]); toast(n ? '카드 추가! 오늘 탭 새 문장에 나와요' : '이미 있는 문장이에요'); queueBuilt = false; renderRead(); }
 function addAllExpr() { const a = rdView.art; const n = addMine(a.expressions.map(x => exprCard(x, a))); toast(n + '개 카드 추가'); queueBuilt = false; renderRead(); }
+
+/* ── 형광펜 ─────────────────────────────────
+   저장: S.hl = [{id, art, p(문단), s, e(문자 위치), c(색), text, note, created}]
+   칠하기: ① 색 고르고 문장 탭 → 문장 전체  ② 길게 눌러 선택 → 색 탭 → 선택 부분 */
+const HL_COLORS = [
+  { id: 'y', label: '모르겠는 문장', emoji: '🟨', bg: '#ffe680' },
+  { id: 'g', label: '핵심 문장', emoji: '🟩', bg: '#b6ecb9' },
+  { id: 'b', label: '써먹을 표현', emoji: '🟦', bg: '#b3dcfb' },
+  { id: 'p', label: '문법 궁금', emoji: '🟪', bg: '#e6c8f5' },
+  { id: 'o', label: '내 생각·반론', emoji: '🟧', bg: '#ffd0a6' },
+];
+const HL_BY = {}; HL_COLORS.forEach(c => HL_BY[c.id] = c);
+function hlLabel(c) { return (S.hlLabels && S.hlLabels[c]) || HL_BY[c].label; }
+let hlPen = null;          // 문장 탭 모드에서 쓸 색 (null이면 꺼짐)
+let hlPending = null;      // 직접 선택한 범위 {p, s, e}
+function hlForArt(artId) { return S.hl.filter(h => h.art === artId); }
+function renderParaHTML(a, i) {
+  const text = a.paragraphs[i];
+  const hs = S.hl.filter(h => h.art === a.id && h.p === i && h.s < h.e && h.e <= text.length).sort((x, y) => x.s - y.s);
+  let out = '', pos = 0;
+  for (const h of hs) {
+    if (h.s < pos) continue; // 겹침 방어
+    out += markGlossary(text.slice(pos, h.s), a.glossary);
+    out += `<mark class="hl hl-${h.c}" data-h="${h.id}">${esc(text.slice(h.s, h.e))}${h.note ? '<sup>✎</sup>' : ''}</mark>`;
+    pos = h.e;
+  }
+  return out + markGlossary(text.slice(pos), a.glossary);
+}
+function hlOffset(container, node, off) { const r = document.createRange(); r.setStart(container, 0); r.setEnd(node, off); return r.toString().length; }
+function hlContainer(node) { const el = node && (node.nodeType === 1 ? node : node.parentElement); return el && el.closest ? el.closest('.ptext') : null; }
+function isWordCh(ch) { return !!ch && /[\p{L}\p{N}'’-]/u.test(ch); }
+function snapWord(text, s, e) {
+  while (s > 0 && isWordCh(text[s - 1])) s--;
+  while (e < text.length && isWordCh(text[e])) e++;
+  while (s < e && /\s/.test(text[s])) s++; while (e > s && /\s/.test(text[e - 1])) e--;
+  return [s, e];
+}
+function sentenceAt(text, off) {
+  const re = /[.!?…]["»”]?\s+/g; let m, s = 0, e = text.length;
+  while ((m = re.exec(text))) { const end = m.index + m[0].length; if (end <= off) s = end; else { e = m.index + m[0].trimEnd().length; break; } }
+  return [s, e];
+}
+function addHL(p, s, e, c) {
+  const a = rdView.art; const text = a.paragraphs[p];
+  if (e - s < 1) return null;
+  S.hl = S.hl.filter(h => !(h.art === a.id && h.p === p && h.s < e && s < h.e)); // 겹치는 기존 형광펜은 교체
+  const h = { id: 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), art: a.id, p, s, e, c, text: text.slice(s, e), note: '', created: new Date().toISOString(), title: a.title };
+  S.hl.push(h); save(); return h;
+}
+function hlRerender() { const y = window.scrollY; renderRead(); window.scrollTo(0, y); }
+// 직접 선택 감지
+document.addEventListener('selectionchange', () => {
+  if (currentTab !== 'read' || !rdView.art) return;
+  const sel = window.getSelection(); if (!sel || sel.rangeCount === 0) return;
+  if (sel.isCollapsed) { if (hlPending) { clearTimeout(hlPending._t); hlPending._t = setTimeout(() => { const s2 = window.getSelection(); if (s2 && s2.isCollapsed) { hlPending = null; hlBarUpdate(); } }, 600); } return; }
+  const r = sel.getRangeAt(0); const c1 = hlContainer(r.startContainer); if (!c1) return;
+  const p = +c1.dataset.p; const text = rdView.art.paragraphs[p];
+  let s = hlOffset(c1, r.startContainer, r.startOffset);
+  const c2 = hlContainer(r.endContainer);
+  let e = (c2 === c1) ? hlOffset(c1, r.endContainer, r.endOffset) : text.length; // 문단을 넘기면 첫 문단 끝까지
+  [s, e] = snapWord(text, Math.max(0, s), Math.min(text.length, e));
+  if (e > s) { hlPending = { p, s, e }; hlBarUpdate(); }
+});
+function hlArticleClick(ev) {
+  const mk = ev.target.closest('mark.hl');
+  if (mk) { ev.preventDefault(); openHL(mk.dataset.h); return; }
+  if (!hlPen) return;
+  const c = hlContainer(ev.target); if (!c) return;
+  const sel = window.getSelection(); if (sel && !sel.isCollapsed) return; // 드래그 선택 중이면 무시
+  let off = null;
+  if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(ev.clientX, ev.clientY); if (r && c.contains(r.startContainer)) off = hlOffset(c, r.startContainer, r.startOffset); }
+  else if (document.caretPositionFromPoint) { const r = document.caretPositionFromPoint(ev.clientX, ev.clientY); if (r && c.contains(r.offsetNode)) off = hlOffset(c, r.offsetNode, r.offset); }
+  if (off == null) return;
+  const p = +c.dataset.p; const [s, e] = sentenceAt(rdView.art.paragraphs[p], off);
+  if (addHL(p, s, e, hlPen)) { if (navigator.vibrate) navigator.vibrate(10); hlRerender(); }
+}
+function hlBarUpdate() {
+  const bar = $('hlBar'); if (!bar) return;
+  const on = currentTab === 'read' && rdView.art && !rdView.hlList;
+  bar.classList.toggle('show', !!on); document.body.classList.toggle('hl-on', !!on);
+  if (!on) { hlPen = null; hlPending = null; return; }
+  const hint = hlPending ? '선택한 부분을 칠할 색을 누르세요' : hlPen ? `${HL_BY[hlPen].emoji} ${esc(hlLabel(hlPen))} — 문장을 탭하면 칠해져요` : '🖍️ 색을 고르고 문장을 탭하거나, 길게 눌러 선택하세요';
+  bar.innerHTML = `<div class="hl-hint">${hint}</div><div class="hl-row">` + HL_COLORS.map(c => `<button class="hl-sw ${hlPen === c.id ? 'on' : ''}" style="background:${c.bg}" onmousedown="event.preventDefault()" ontouchstart="" onclick="hlColorTap('${c.id}')"><span>${esc(hlLabel(c.id))}</span></button>`).join('') +
+    (hlPen ? `<button class="hl-sw done" onclick="hlPen=null;hlBarUpdate()">끄기</button>` : '') + `</div>`;
+}
+function hlColorTap(c) {
+  if (hlPending) {
+    const { p, s, e } = hlPending; hlPending = null;
+    const h = addHL(p, s, e, c); try { window.getSelection().removeAllRanges(); } catch (_) { }
+    if (h) { hlRerender(); toast(`${HL_BY[c].emoji} 칠했어요 · 누르면 메모·질문`); }
+    return;
+  }
+  hlPen = hlPen === c ? null : c; hlBarUpdate();
+}
+function hlById(id) { return S.hl.find(h => h.id === id); }
+function openHL(id) {
+  const h = hlById(id); if (!h) return; const col = HL_BY[h.c];
+  openOverlay(`<div style="border-left:5px solid ${col.bg};padding:6px 12px;background:${col.bg}55;border-radius:0 10px 10px 0;font-size:17px;line-height:1.7;font-family:'Iowan Old Style',Georgia,serif">${esc(h.text)} <button class="speak-btn" onclick="speak(hlById('${h.id}').text)">🔊</button></div>
+    <div class="sub" style="margin-top:6px">${esc(h.title || '')}</div>
+    <div class="pill-group" style="margin-top:12px">${HL_COLORS.map(c => `<span class="pill" style="background:${c.bg};border-color:${h.c === c.id ? 'var(--ink)' : c.bg};color:var(--ink);${h.c === c.id ? 'box-shadow:0 0 0 2px var(--ink)' : ''}" onclick="hlSetColor('${h.id}','${c.id}')">${esc(hlLabel(c.id))}</span>`).join('')}</div>
+    <textarea id="hlNote" rows="3" placeholder="메모: 뜻, 궁금한 점, 내 생각…">${esc(h.note || '')}</textarea>
+    <div class="btn-row" style="margin-top:12px"><button class="big gK" onclick="askClaudeHL('${h.id}')">🤔 Claude에게 물어보기</button></div>
+    <div class="btn-row" style="margin-top:8px"><button class="ghost" onclick="hlToCard('${h.id}')">+ 복습 카드</button><button class="ghost" onclick="copyText(hlById('${h.id}').text).then(()=>toast('복사했어요'))">복사</button><button class="ghost" style="color:var(--bad)" onclick="hlDelete('${h.id}')">지우기</button></div>
+    <button class="flip" onclick="hlSaveNote('${h.id}');closeOverlay()">닫기</button>`);
+  const ta = $('hlNote'); ta.oninput = () => { clearTimeout(ta._t); ta._t = setTimeout(() => hlSaveNote(h.id, true), 500); };
+}
+function hlSaveNote(id, quiet) { const h = hlById(id); const ta = $('hlNote'); if (!h || !ta) return; const changed = h.note !== ta.value; h.note = ta.value; save(); if (changed && !quiet && currentTab === 'read') hlRerender(); }
+function hlSetColor(id, c) { hlSaveNote(id, true); const h = hlById(id); h.c = c; save(); openHL(id); if (currentTab === 'read') hlRerender(); }
+function hlDelete(id) { S.hl = S.hl.filter(h => h.id !== id); save(); closeOverlay(); if (currentTab === 'read') hlRerender(); toast('지웠어요'); }
+function hlToCard(id) {
+  hlSaveNote(id, true); const h = hlById(id);
+  if (!h.note.trim()) { toast('메모에 뜻을 먼저 적어주세요. 카드 앞면에 나와요'); $('hlNote').focus(); return; }
+  const n = addMine([mkMine(h.text, h.note.trim(), '', '형광펜 · ' + (h.title || '').slice(0, 30), '')]); queueBuilt = false;
+  toast(n ? '카드 추가! 앞면에 내 메모, 뒷면에 문장' : '이미 있는 문장이에요');
+}
+function hlPrompt(h) {
+  const f = findArticle(h.art); const para = f ? f.art.paragraphs[h.p] : '';
+  const ask = {
+    y: '1) 자연스러운 한국어 번역\n2) 문장 구조 분해 (주절·종속절, 주어·동사가 어디인지, 대명사가 가리키는 것)\n3) 이해를 막는 핵심 단어·표현 풀이\n4) 이 문장을 더 쉬운 스페인어로 바꿔 말하면?',
+    g: '1) 자연스러운 한국어 번역\n2) 이 문장이 글 전체에서 하는 역할 (주장/근거/전환 등)\n3) 같은 뜻을 내 말로 바꿔 쓴 스페인어 문장 2개 (B2 수준, 의견문에 쓸 수 있게)',
+    b: '1) 이 표현의 뜻과 뉘앙스\n2) 어떤 상황·문체(구어/문어)에서 쓰는지\n3) 내가 일기나 의견문에 쓸 수 있는 예문 3개 (한국어 뜻 포함)\n4) 비슷한 표현과의 차이',
+    p: '1) 자연스러운 한국어 번역\n2) 여기 쓰인 문법 구조를 자세히 설명 (왜 이 시제·법·구조인지, 다른 걸 쓰면 뜻이 어떻게 달라지는지)\n3) 같은 구조로 만든 쉬운 예문 3개',
+    o: '1) 이 문장의 주장을 한 줄로 요약\n2) 이에 대한 반론이나 다른 관점 2가지 (한국어 설명 + 스페인어 한 문장씩)\n3) 내가 의견문에서 이 주장에 동의하거나 반박할 때 쓸 수 있는 스페인어 문장 틀 3개',
+  }[h.c];
+  return `나는 스페인어 B2(DELE B2 준비) 학습자야. 시사 기사를 읽다가 이 부분에 형광펜을 칠했어. 설명은 한국어로, 예문은 스페인어로 해줘.
+
+[칠한 부분]
+${h.text}
+
+[문맥 (그 문단)]
+${para}
+${h.note ? '\n[내 메모]\n' + h.note + '\n' : ''}
+[알고 싶은 것]
+${ask}`;
+}
+function askClaudeHL(id) { hlSaveNote(id, true); openClaudeWith(hlPrompt(hlById(id))); }
+// 형광펜 모음
+let hlFilter = null;
+function renderHLList(el) {
+  const list = S.hl.filter(h => !hlFilter || h.c === hlFilter).slice().reverse();
+  let h = `<div class="pill-group" style="margin-bottom:10px"><button class="ghost sm" onclick="rdView.hlList=false;renderRead()">← 기사 목록</button><button class="ghost sm" onclick="editHLLabels()">색 이름 바꾸기</button></div>
+    <h2 class="sec">🖍️ 형광펜 모음 (${S.hl.length})</h2><div class="pill-group" style="margin-bottom:12px"><span class="pill ${!hlFilter ? 'on' : ''}" onclick="hlFilter=null;renderRead()">전체</span>` +
+    HL_COLORS.map(c => { const n = S.hl.filter(x => x.c === c.id).length; return `<span class="pill" style="background:${c.bg};border-color:${hlFilter === c.id ? 'var(--ink)' : c.bg};color:var(--ink);${hlFilter === c.id ? 'box-shadow:0 0 0 2px var(--ink)' : ''}" onclick="hlFilter='${c.id}';renderRead()">${esc(hlLabel(c.id))} ${n}</span>`; }).join('') + `</div>`;
+  if (!list.length) h += `<div class="card empty">아직 칠한 문장이 없어요.<br>기사를 읽으면서 아래 형광펜 막대로 칠해보세요.</div>`;
+  h += list.map(x => `<div class="list-item" style="border-left:5px solid ${HL_BY[x.c].bg}" onclick="openHL('${x.id}')"><div style="font-size:15px;line-height:1.6">${esc(x.text)}</div>${x.note ? `<div class="sub" style="margin-top:4px">✎ ${esc(x.note)}</div>` : ''}<div class="sub" style="margin-top:4px;font-size:12px">${esc(hlLabel(x.c))} · ${esc((x.title || '').slice(0, 40))} <a href="#" onclick="event.stopPropagation();event.preventDefault();gotoHL('${x.id}')">기사에서 보기 →</a></div></div>`).join('');
+  el.innerHTML = h;
+}
+async function gotoHL(id) {
+  const h = hlById(id); if (!h) return;
+  if (!findArticle(h.art)) { const pid = h.art.replace(/-\d+$/, ''); try { await loadPack(pid); } catch (e) { toast('기사를 불러오지 못했어요'); return; } }
+  rdView.hlList = false; openArticle(h.art);
+  setTimeout(() => { const m = document.querySelector(`mark[data-h="${id}"]`); if (m) { m.scrollIntoView({ behavior: 'smooth', block: 'center' }); m.classList.add('flash'); setTimeout(() => m.classList.remove('flash'), 1600); } }, 80);
+}
+function editHLLabels() {
+  openOverlay(`<h2>색 이름 바꾸기</h2><p>내 방식대로 색의 의미를 정하세요.</p>` + HL_COLORS.map(c => `<div style="display:flex;align-items:center;gap:8px;margin-top:8px"><span style="width:26px;height:26px;border-radius:7px;background:${c.bg};flex:none"></span><input type="text" id="hlLab_${c.id}" value="${esc(hlLabel(c.id))}" style="margin-top:0"></div>`).join('') +
+    `<button class="flip" onclick="saveHLLabels()">저장</button><button class="ghost" style="width:100%;margin-top:8px" onclick="S.hlLabels={};save();closeOverlay();renderRead()">기본값으로</button>`);
+}
+function saveHLLabels() { S.hlLabels = {}; HL_COLORS.forEach(c => { const v = $('hlLab_' + c.id).value.trim(); if (v && v !== c.label) S.hlLabels[c.id] = v.slice(0, 12); }); save(); closeOverlay(); renderRead(); }
+function hlRefBox(articleId) {
+  const hs = hlForArt(articleId).slice().sort((a, b) => a.p - b.p || a.s - b.s);
+  if (!hs.length) return '';
+  return `<details class="card" ${hs.length <= 6 ? 'open' : ''}><summary style="font-weight:700;cursor:pointer">🖍️ 이 기사에서 칠한 문장 ${hs.length}개</summary><div class="sub" style="margin:6px 0">그대로 옮기지 말고 내 말로 바꿔 쓰는 재료로 쓰세요.</div>` +
+    hs.map(x => `<div style="border-left:4px solid ${HL_BY[x.c].bg};padding:6px 10px;margin-top:8px;font-size:14px;line-height:1.6;background:${HL_BY[x.c].bg}33;border-radius:0 8px 8px 0">${esc(x.text)} <button class="speak-btn" style="font-size:16px" onclick="speak(hlById('${x.id}').text)">🔊</button>${x.note ? `<div class="sub">✎ ${esc(x.note)}</div>` : ''}</div>`).join('') + `</details>`;
+}
 
 /* ── 쓰기: 일기 + Claude 첨삭 ─────────────────── */
 const DIARY_PROMPTS = [
@@ -697,6 +866,7 @@ function taskBox(e) {
 function renderEditor(el, e) {
   let h = `<div class="pill-group" style="margin-bottom:10px"><button class="ghost sm" onclick="saveDraft();wrView.mode='home';renderWrite()">← 목록</button>${e.mode === 'diary' ? '<button class="ghost sm" onclick="rerollPrompt()">🎲 다른 주제</button>' : ''}<button class="ghost sm" onclick="deleteEntry()">삭제</button></div>`;
   h += missionBox(e, true);
+  if (e.articleId) h += hlRefBox(e.articleId);
   h += `<div class="card">${taskBox(e)}<div class="sub" style="margin-top:8px">주제는 참고용이에요. 오늘 있었던 일을 자유롭게 써도 돼요. 미션 구조만 꼭 넣어보세요.</div>`;
   if (e.targets && e.targets.length) h += `<div style="margin-top:10px"><span class="sub">넣어볼 표현:</span><br>` + e.targets.map((t, i) => `<span class="chip" id="tg${i}" title="${esc(t.from || '')}">${esc(t.es)}</span>`).join('') + `</div>`;
   h += `<textarea id="wrText" rows="12" placeholder="Hoy... (스페인어로 써보세요. 모르는 단어는 (한국어)로 남겨도 돼요)" autocapitalize="sentences" spellcheck="false">${esc(e.text)}</textarea><div class="wc" id="wrWc"></div>
@@ -1083,9 +1253,9 @@ function goTab(tab) {
   stopSpeak();
   document.querySelectorAll('nav.tabbar button').forEach(x => x.classList.toggle('active', x.dataset.tab === tab));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
-  currentTab = tab; $('panel-' + tab).classList.add('show'); refreshTab(); window.scrollTo(0, 0);
+  currentTab = tab; $('panel-' + tab).classList.add('show'); refreshTab(); hlBarUpdate(); window.scrollTo(0, 0);
 }
-document.querySelectorAll('nav.tabbar button').forEach(b => b.onclick = () => { if (b.dataset.tab === 'write' && currentTab === 'write' && wrView.mode !== 'edit') wrView.mode = 'home'; if (b.dataset.tab === 'read' && currentTab === 'read') rdView.art = null; goTab(b.dataset.tab); });
+document.querySelectorAll('nav.tabbar button').forEach(b => b.onclick = () => { if (b.dataset.tab === 'write' && currentTab === 'write' && wrView.mode !== 'edit') wrView.mode = 'home'; if (b.dataset.tab === 'read' && currentTab === 'read') { rdView.art = null; rdView.hlList = false; } goTab(b.dataset.tab); });
 function refreshTab() {
   updateHeader();
   if (currentTab === 'today') renderToday(); else if (currentTab === 'practice') renderPractice(false);
