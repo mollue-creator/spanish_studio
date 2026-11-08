@@ -1,7 +1,7 @@
 /* 문장장 스튜디오 v3 — 스페인어 전용 PWA
    오늘(SRS) · 연습(받아쓰기/말하기/드릴/롤플레이) · 읽기(주간 시사 팩) · 쓰기(일기 + Claude 첨삭) · 기록 */
 'use strict';
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.0';
 const LS_KEY = 'estudio_v3';
 const LEVELS = ['B1', 'B2', 'C1'];
 const INTERVALS = [0, 1, 3, 7, 16, 35, 80];
@@ -26,7 +26,7 @@ function normState(st) {
   s.streak = s.streak || 0; s.lastDay = s.lastDay || 0; s.daily = s.daily || {};
   s.tags = s.tags || {}; s.missWords = s.missWords || {}; s.upDay = s.upDay || {}; s.lastBackup = s.lastBackup || 0;
   s.dialogsDone = s.dialogsDone || 0; s.quizRight = s.quizRight || 0; s.quizTotal = s.quizTotal || 0;
-  s.writeErr = s.writeErr || {};
+  s.writeErr = s.writeErr || {}; s.mission = s.mission || {};
   st.mine = Array.isArray(st.mine) ? st.mine : [];
   st.journal = Array.isArray(st.journal) ? st.journal : [];
   st.read = st.read || {};
@@ -524,9 +524,50 @@ function pickTargets(n) {
   }
   return out;
 }
+/* ── B2 문법 미션: DELE B2 작문에서 '자유자재로' 써야 하는 구조 ── */
+const GRAM_B2 = [
+  { id: 'emo', name: '감정 + que + 접속법', pat: 'Me alegra / Me molesta / Me sorprende que + subj.', ko: '감정·반응 뒤 que절은 접속법', ex: 'Me molesta que la gente no respete los turnos.', exko: '사람들이 순서를 안 지키는 게 거슬린다.' },
+  { id: 'emo_past', name: '감정(과거) + 접속법 과거', pat: 'Me sorprendió que + imperf. subj.', ko: '주절이 과거면 접속법 과거로 시제 일치', ex: 'Me sorprendió que nadie dijera nada.', exko: '아무도 아무 말 안 한 게 놀라웠다.' },
+  { id: 'duda', name: '부정·의심 + 접속법', pat: 'No creo que / Dudo que / No es verdad que + subj.', ko: '확신이 없으면 접속법 (creo que는 직설법)', ex: 'No creo que sea tan sencillo como parece.', exko: '보이는 것만큼 간단하지는 않을 것 같다.' },
+  { id: 'valor', name: '가치 판단 + que + 접속법', pat: 'Es fundamental / lógico / preocupante que + subj.', ko: '평가·필요를 말하는 무인칭 표현 뒤 접속법', ex: 'Es fundamental que el gobierno invierta más en vivienda.', exko: '정부가 주거에 더 투자하는 것이 중요하다.' },
+  { id: 'loque', name: 'Lo que más… es que + 접속법', pat: 'Lo que más me preocupa es que + subj.', ko: '강조 구문 — 의견문 첫 문장으로 강력함', ex: 'Lo que más me preocupa es que no se haga nada.', exko: '가장 걱정되는 건 아무것도 안 한다는 점이다.' },
+  { id: 'cuando', name: '미래 시점 cuando + 접속법', pat: 'Cuando / En cuanto / Hasta que + subj. (미래)', ko: '아직 안 일어난 일의 시간절은 접속법', ex: 'Cuando termine el curso, me tomaré unas vacaciones.', exko: '수업이 끝나면 휴가를 갈 거다.' },
+  { id: 'aunque', name: '양보 aunque + 접속법', pat: 'Aunque + subj. (설령 ~라도)', ko: '직설법=사실 인정, 접속법=가정·상관없음', ex: 'Aunque sea caro, merece la pena.', exko: '비싸더라도 그럴 가치가 있다.' },
+  { id: 'paraque', name: '목적 para que + 접속법', pat: 'Para que / Sin que / Antes de que + subj.', ko: '주어가 다른 목적·조건절은 접속법', ex: 'Lo explico despacio para que todos lo entiendan.', exko: '모두가 이해하도록 천천히 설명한다.' },
+  { id: 'rel', name: '불특정 선행사 + 접속법', pat: 'Necesitamos algo / alguien que + subj.', ko: '존재가 확정되지 않은 대상을 꾸미는 관계절', ex: 'Necesitamos políticas que protejan a los jóvenes.', exko: '젊은이들을 보호할 정책이 필요하다.' },
+  { id: 'si2', name: '현재 반사실 가정', pat: 'Si + imperf. subj., condicional', ko: '지금 사실과 반대되는 가정', ex: 'Si tuviera más tiempo, aprendería a tocar el piano.', exko: '시간이 더 있다면 피아노를 배울 텐데.' },
+  { id: 'si3', name: '과거 반사실 가정', pat: 'Si + pluscuamp. subj., condicional compuesto', ko: '과거에 일어나지 않은 일의 가정 (후회·비판)', ex: 'Si hubiera estudiado más, habría aprobado.', exko: '더 공부했더라면 합격했을 텐데.' },
+  { id: 'ojala', name: '소망 ojalá', pat: 'Ojalá + pres. subj. / imperf. subj.', ko: '현재형=가능한 바람, 과거형=가능성 낮은 바람', ex: 'Ojalá pudiéramos cambiar las cosas más rápido.', exko: '더 빨리 바꿀 수 있으면 좋을 텐데.' },
+  { id: 'comosi', name: 'como si + 접속법 과거', pat: 'Como si + imperf./pluscuamp. subj.', ko: '마치 ~인 것처럼 (항상 접속법 과거 계열)', ex: 'Habla como si lo supiera todo.', exko: '그는 다 아는 것처럼 말한다.' },
+  { id: 'pormucho', name: 'Por mucho que + 접속법', pat: 'Por mucho que / Por más que + subj.', ko: '아무리 ~해도 (강한 양보)', ex: 'Por mucho que lo intente, no consigo madrugar.', exko: '아무리 해도 일찍 못 일어나겠다.' },
+  { id: 'cond', name: '조건 접속사 + 접속법', pat: 'A no ser que / Siempre que / Con tal de que + subj.', ko: '조건·예외를 정교하게 (si보다 B2다움)', ex: 'Iré a la reunión, a no ser que surja algo urgente.', exko: '급한 일이 생기지 않는 한 회의에 갈 거다.' },
+  { id: 'indirecto', name: '간접 명령·요청 + 접속법 과거', pat: 'Me pidió / Me aconsejó que + imperf. subj.', ko: '과거의 요청·충고를 전달할 때', ex: 'Mi profesora me aconsejó que leyera más prensa.', exko: '선생님이 신문을 더 읽으라고 조언했다.' },
+  { id: 'pasiva', name: '무인칭·수동 se', pat: 'Se ha demostrado que… / Se debería + inf.', ko: '논증문에서 주어를 숨기고 객관적 톤 만들기', ex: 'Se ha demostrado que leer en papel mejora la comprensión.', exko: '종이로 읽는 것이 이해를 높인다는 것이 입증됐다.' },
+  { id: 'conect', name: '논증 연결어', pat: 'No obstante, Por consiguiente, Cabe destacar que, En definitiva', ko: 'pero/porque/entonces만 쓰면 B1 — 글의 층위를 올리는 연결어', ex: 'Cabe destacar, no obstante, que los datos son limitados.', exko: '다만 데이터가 제한적이라는 점은 짚어둘 만하다.' },
+];
+const GRAM_BY_ID = {}; GRAM_B2.forEach(g => GRAM_BY_ID[g.id] = g);
+function pickMissions(n, exclude) {
+  // 덜 연습했고 성공률 낮은 구조 우선 + 약간의 무작위
+  const ms = S.stats.mission || {};
+  const scored = GRAM_B2.filter(g => !(exclude || []).includes(g.id)).map(g => { const m = ms[g.id] || { try: 0, ok: 0 }; return { g, score: m.try * 2 + m.ok * 3 + Math.random() * 4 }; });
+  scored.sort((a, b) => a.score - b.score);
+  return scored.slice(0, n).map(x => x.g.id);
+}
+function missionBox(e, editable) {
+  if (!e.mission || !e.mission.length) return '';
+  return `<div class="card" style="border-color:#e9c6c2"><b>🎯 오늘의 B2 문법 미션</b> <span class="sub">이 구조를 글에 꼭 한 번씩 넣어보세요</span>` +
+    e.mission.map(id => { const g = GRAM_BY_ID[id]; if (!g) return ''; return `<div class="err" style="border-left-color:var(--blue);background:#f5f8fc"><b>${esc(g.name)}</b><br><span style="font-family:monospace;font-size:13px">${esc(g.pat)}</span><br><span class="sub">${esc(g.ko)}</span><br>예) <i>${esc(g.ex)}</i> <button class="speak-btn" onclick="speak(GRAM_BY_ID['${g.id}'].ex)">🔊</button><br><span class="sub">${esc(g.exko)}</span></div>`; }).join('') +
+    (editable ? `<div class="pill-group"><button class="ghost sm" onclick="rerollMission()">🎲 다른 미션</button><button class="ghost sm" onclick="showGrammarBook()">📘 B2 구조 전체 보기</button></div>` : '') + `</div>`;
+}
+function showGrammarBook() {
+  const ms = S.stats.mission || {};
+  openOverlay(`<h2>📘 DELE B2 핵심 구조 ${GRAM_B2.length}개</h2><p>B2 작문 채점에서 '문법 범위·정확성'은 이 구조들을 상황에 맞게 골라 쓰는지로 갈려요. 🔊로 예문을 듣고 그대로 따라 써보세요.</p>` +
+    GRAM_B2.map(g => { const m = ms[g.id]; return `<div class="err" style="border-left-color:var(--blue);background:#f5f8fc"><b>${esc(g.name)}</b> ${m ? `<span class="tag ${m.ok ? 'green' : ''}">성공 ${m.ok}/${m.try}</span>` : ''}<br><span style="font-family:monospace;font-size:12px">${esc(g.pat)}</span><br><span class="sub">${esc(g.ko)}</span><br><i>${esc(g.ex)}</i> <button class="speak-btn" onclick="speak(GRAM_BY_ID['${g.id}'].ex)">🔊</button></div>`; }).join('') +
+    `<button class="flip" onclick="closeOverlay()">닫기</button>`);
+}
 let wrView = { mode: 'home', id: null };
 function newEntry(mode, articleId) {
-  const e = { id: 'j' + Date.now().toString(36), created: new Date().toISOString(), day: today(), mode, text: '', words: 0, status: 'draft', fb: null, fbRaw: '', rewrite: '', targets: [] };
+  const e = { id: 'j' + Date.now().toString(36), created: new Date().toISOString(), day: today(), mode, text: '', words: 0, status: 'draft', fb: null, fbRaw: '', rewrite: '', targets: [], mission: pickMissions(2) };
   if (mode === 'opinion') {
     const f = findArticle(articleId); const a = f && f.art;
     e.articleId = articleId; e.task = a ? { es: a.writing.task_es, ko: a.writing.task_ko, words: a.writing.words || '150–180', title: a.title } : { es: '', ko: '' };
@@ -555,10 +596,10 @@ function renderWrite() {
 function renderWriteHome(el) {
   wrView.mode = 'home';
   const thisWeek = PACKS.latest ? PACKS.latest.articles : [];
-  let h = `<div class="card"><b>오늘 쓰기</b><div class="sub" style="margin-top:4px">쓰기 → Claude 첨삭 → 다시 쓰기. 틀린 문장은 고친 형태로 복습 카드가 돼요.</div>
+  let h = `<div class="card"><b>오늘 쓰기</b><div class="sub" style="margin-top:4px">쓰기 (B2 문법 미션 2개) → Claude 첨삭 → 레벨업 다시 쓰기 → 재검사. 틀린 문장과 업그레이드 문장은 복습 카드가 돼요.</div>
     <div class="btn-row"><button class="big gA" onclick="startWriting('diary')">📔 짧은 일기 (80–150단어)</button></div>`;
   if (thisWeek.length) h += `<div class="sub" style="margin-top:14px">또는 이번 주 기사로 의견문 (DELE B2형, 150–180단어)</div>` + thisWeek.map(a => `<div class="list-item" style="margin-top:8px" onclick="startWriting('opinion','${a.id}')"><span class="tag red">${esc(a.topic)}</span> <span class="t">${esc(a.title_ko || a.title)}</span></div>`).join('');
-  h += `</div>`;
+  h += `<div class="btn-row"><button class="ghost" onclick="showGrammarBook()">📘 B2 핵심 구조 ${GRAM_B2.length}개 보기</button></div></div>`;
   const errTop = Object.entries(S.stats.writeErr).sort((a, b) => b[1] - a[1]).slice(0, 3);
   if (errTop.length) h += `<div class="card"><b>내가 자주 틀리는 것</b><div class="detail">${errTop.map(([k, v]) => `<span class="tag red" style="margin:2px">${esc(k)} ×${v}</span>`).join(' ')}</div><div class="sub" style="margin-top:6px">다음 글에서 이 부분을 의식해서 써보세요.</div></div>`;
   h += `<h2 class="sec">내 글 (${S.journal.length})</h2>`;
@@ -574,11 +615,12 @@ function renderWriteHome(el) {
 function openEntry(id) { const e = S.journal.find(j => j.id === id); if (!e) return; wrView.id = id; wrView.mode = e.status === 'draft' ? 'edit' : e.status === 'requested' ? 'request' : 'result'; renderWrite(); window.scrollTo(0, 0); }
 function taskBox(e) {
   if (!e.task) return '';
-  return `<div class="task-box"><div class="es">${esc(e.task.es)}</div>${esc(e.task.ko)}${e.task.focus ? '<br><span style="font-size:13px">🎯 써보면 좋은 문법: ' + esc(e.task.focus) + '</span>' : ''}${e.task.title ? '<br><span style="font-size:12px">기사: ' + esc(e.task.title) + '</span>' : ''}</div>`;
+  return `<div class="task-box"><div class="es">${esc(e.task.es)}</div>${esc(e.task.ko)}${e.task.focus ? '<br><span style="font-size:13px">💡 이 주제에 어울리는 표현: ' + esc(e.task.focus) + '</span>' : ''}${e.task.title ? '<br><span style="font-size:12px">기사: ' + esc(e.task.title) + '</span>' : ''}</div>`;
 }
 function renderEditor(el, e) {
   let h = `<div class="pill-group" style="margin-bottom:10px"><button class="ghost sm" onclick="saveDraft();wrView.mode='home';renderWrite()">← 목록</button>${e.mode === 'diary' ? '<button class="ghost sm" onclick="rerollPrompt()">🎲 다른 주제</button>' : ''}<button class="ghost sm" onclick="deleteEntry()">삭제</button></div>`;
-  h += `<div class="card">${taskBox(e)}<div class="sub" style="margin-top:8px">주제는 참고용이에요. 오늘 있었던 일을 자유롭게 써도 돼요.</div>`;
+  h += missionBox(e, true);
+  h += `<div class="card">${taskBox(e)}<div class="sub" style="margin-top:8px">주제는 참고용이에요. 오늘 있었던 일을 자유롭게 써도 돼요. 미션 구조만 꼭 넣어보세요.</div>`;
   if (e.targets && e.targets.length) h += `<div style="margin-top:10px"><span class="sub">넣어볼 표현:</span><br>` + e.targets.map((t, i) => `<span class="chip" id="tg${i}" title="${esc(t.from || '')}">${esc(t.es)}</span>`).join('') + `</div>`;
   h += `<textarea id="wrText" rows="12" placeholder="Hoy... (스페인어로 써보세요. 모르는 단어는 (한국어)로 남겨도 돼요)" autocapitalize="sentences" spellcheck="false">${esc(e.text)}</textarea><div class="wc" id="wrWc"></div>
     <div class="btn-row"><button class="ghost" onclick="saveDraft(true)">임시 저장</button><button class="big gA" onclick="goRequest()">Claude에게 첨삭받기 →</button></div></div>`;
@@ -589,6 +631,7 @@ function renderEditor(el, e) {
 }
 function saveDraft(show) { const e = curEntry(); const ta = $('wrText'); if (!e || !ta) return; e.text = ta.value; e.words = wordCount(ta.value); e.updated = new Date().toISOString(); save(); if (show) toast('저장했어요'); }
 function rerollPrompt() { const e = curEntry(); saveDraft(); const p = DIARY_PROMPTS[Math.floor(Math.random() * DIARY_PROMPTS.length)]; e.task = { es: p.es, ko: p.ko, focus: p.focus, words: '80–150' }; e.targets = pickTargets(2); save(); renderWrite(); }
+function rerollMission() { const e = curEntry(); saveDraft(); e.mission = pickMissions(2, e.mission); save(); renderWrite(); }
 function deleteEntry() { if (!confirm('이 글을 삭제할까요?')) return; S.journal = S.journal.filter(j => j.id !== wrView.id); save(); wrView.mode = 'home'; renderWrite(); }
 function goRequest() {
   saveDraft(); const e = curEntry();
@@ -596,13 +639,16 @@ function goRequest() {
   e.status = 'requested'; e.day = today(); touchStreak(); save(); wrView.mode = 'request'; renderWrite(); window.scrollTo(0, 0);
 }
 const ERR_TYPES = ['시제·법', '접속법', '성수일치', '전치사', '관사', 'ser/estar', 'por/para', '대명사', '어휘선택', '어순', '연결어', '철자·악센트', '문체·격식'];
+function missionLines(e) { return (e.mission || []).map((id, i) => { const g = GRAM_BY_ID[id]; return g ? `${i + 1}) ${g.name} — ${g.pat}` : ''; }).filter(Boolean).join('\n'); }
 function buildPrompt(e) {
   const tg = (e.targets || []).map(t => t.es).join(', ');
-  return `너는 한국인 학습자를 가르치는 스페인어 작문 첨삭 선생님이야. 학습자는 B2(DELE B2 준비) 수준을 목표로 해.
+  return `너는 한국인 학습자를 가르치는 스페인어 작문 첨삭 선생님이야. 학습자는 DELE B2 합격이 목표고, 접속법·가정문 같은 B2 구조를 "자유자재로" 쓰는 게 지금 과제야. 단순히 틀린 걸 고치는 데서 끝내지 말고, 글의 문법 수준을 B2로 끌어올리는 법과 원어민다운 톤을 함께 가르쳐줘.
 
 [과제] ${e.mode === 'opinion' ? 'DELE B2형 의견문 (' + ((e.task && e.task.words) || '150–180') + '단어)' : '짧은 일기 (80–150단어)'}
 ${e.task ? '주제: ' + e.task.es + ' (' + e.task.ko + ')' : ''}
 ${tg ? '넣어보기로 한 표현: ' + tg : ''}
+[문법 미션] 학습자가 이 글에 넣기로 한 B2 구조:
+${missionLines(e) || '(없음)'}
 
 [학습자 글]
 """
@@ -610,27 +656,55 @@ ${e.text.trim()}
 """
 
 [첨삭 규칙]
-1. corrected: 학습자 문장과 의도를 최대한 살린 최소 수정본 (전체 글).
-2. natural: 원어민이 쓸 법한 자연스러운 버전. B2 학습자가 따라 할 수 있는 수준으로.
-3. errors: 중요한 오류만 최대 6개. 사소한 건 corrected에만 반영. 설명(why)은 한국어로 1~2문장.
+1. corrected: 학습자 문장과 의도를 살린 최소 수정본 (전체 글).
+2. errors: 중요한 오류만 최대 6개. 사소한 건 corrected에만 반영. why는 한국어 1~2문장.
    type은 다음 중 하나: ${ERR_TYPES.join(', ')}
-4. 괄호 안에 한국어로 쓴 단어가 있으면 알맞은 스페인어로 바꿔줘.
-5. cards: 학습자가 외워두면 좋을 고친 문장 2~4개 (es는 완전한 문장, ko는 자연스러운 한국어 뜻, point는 핵심 포인트 한 줄).
-6. 넣어보기로 한 표현을 제대로 썼는지 targets_check에 적어줘.
-7. 모든 설명은 한국어, 스페인어 예문은 스페인어.
+3. mission_check: 미션 구조마다 하나씩, 위 순서대로. used(시도했는지), correct(맞게 썼는지), found(글에서 해당 문장, 없으면 ""), fix(틀렸으면 고친 문장, 안 썼으면 이 글 맥락에 맞게 그 구조로 쓴 예문), note(한국어 한 줄).
+4. upgrades: 학습자 문장 중 단순한 문장(직설법만, pero/porque/es importante 반복, 짧은 단문 나열) 3~4개를 골라 같은 뜻을 B2 구조(접속법 명사절·부사절·관계절, 가정문, 양보, 무인칭 se, 고급 연결어 등)로 끌어올린 문장. orig(학습자 원문), up(업그레이드 문장, 학습자가 외워 쓸 수 있는 길이), structure(구조 이름, 예: "Es fundamental que + 접속법"), why(왜 이 구조가 더 B2다운지 한국어 1문장).
+5. native: 문법은 맞지만 직역투·교과서투라 원어민에게 어색한 표현 2~4개를 원어민이 실제로 쓰는 말로. orig, native, why(뉘앙스·연어(collocation)·연결어·구어/문어 톤 차이를 한국어로). 스페인 스페인어 기준, 중남미와 다르면 why에 짧게 덧붙여.
+6. natural: 위 업그레이드와 원어민 톤을 반영한 전체 글. 학습자 글보다 한 단계 위(B2+)지만 학습자가 흉내 낼 수 있는 수준으로.
+7. cards: 외워두면 좋을 문장 3~5개. 고친 문장과 업그레이드 문장을 섞어서 (es 완전한 문장, ko 자연스러운 뜻, point 핵심 한 줄).
+8. 괄호 안 한국어 단어는 알맞은 스페인어로. 넣어보기로 한 표현 사용 여부는 targets_check.
+9. 설명은 모두 한국어, 예문은 스페인어.
 
 [출력 형식] 아래 JSON을 \`\`\`json 코드블록 하나로만 출력해. 코드블록 앞뒤에 다른 말은 쓰지 마.
 \`\`\`json
 {
   "summary": "총평 2~3문장 (한국어)",
   "level": "글에서 보이는 수준 (예: B1+)",
-  "good": ["잘한 점 1", "잘한 점 2"],
+  "good": ["잘한 점"],
   "errors": [{"orig": "틀린 부분", "fix": "고친 부분", "type": "접속법", "why": "이유"}],
+  "mission_check": [{"structure": "구조 이름", "used": true, "correct": false, "found": "글 속 문장", "fix": "고친 문장 또는 예문", "note": "한 줄 설명"}],
+  "upgrades": [{"orig": "학습자 원문", "up": "B2 업그레이드 문장", "structure": "구조", "why": "이유"}],
+  "native": [{"orig": "학습자 표현", "native": "원어민 표현", "why": "뉘앙스 설명"}],
   "corrected": "최소 수정본 전체",
-  "natural": "자연스러운 버전 전체",
-  "cards": [{"es": "고친 문장", "ko": "뜻", "point": "포인트"}],
+  "natural": "B2+ 원어민 버전 전체",
+  "cards": [{"es": "문장", "ko": "뜻", "point": "포인트"}],
   "targets_check": "표현 사용 확인",
   "next": "다음 글에서 시도할 것 한 가지"
+}
+\`\`\``;
+}
+function buildRecheckPrompt(e) {
+  return `너는 스페인어 작문 첨삭 선생님이야. 한국인 학습자(DELE B2 목표)가 첨삭을 받은 뒤, B2 구조를 넣어서 글을 다시 썼어. 이번에는 새로 넣은 B2 구조(접속법·가정문·양보·관계절·연결어 등)가 맞게 쓰였는지를 중심으로 검사해줘.
+
+[문법 미션]
+${missionLines(e) || '(없음)'}
+
+[다시 쓴 글]
+"""
+${(e.rewrite || '').trim()}
+"""
+
+[규칙] 오류는 최대 5개, why는 한국어 1~2문장. mission_check는 미션 순서대로. b2_used에는 이 글에서 제대로 쓴 B2 구조를 글 속 문장 그대로 나열. 더 고칠 게 없으면 errors는 빈 배열.
+아래 JSON을 \`\`\`json 코드블록 하나로만 출력해.
+\`\`\`json
+{
+  "summary": "한 줄 평가 (한국어)",
+  "errors": [{"orig": "틀린 부분", "fix": "고친 부분", "type": "접속법", "why": "이유"}],
+  "mission_check": [{"structure": "구조 이름", "used": true, "correct": true, "found": "글 속 문장", "fix": "", "note": "한 줄"}],
+  "b2_used": ["제대로 쓴 B2 구조 문장"],
+  "corrected": "고친 전체 글"
 }
 \`\`\``;
 }
@@ -642,17 +716,17 @@ async function copyText(text) {
     ta.select(); ta.setSelectionRange(0, text.length); let ok = false; try { ok = document.execCommand('copy'); } catch (_) { } document.body.removeChild(ta); return ok;
   }
 }
-function sendToClaude() {
+function openClaudeWith(p) {
   // 복사와 창 열기를 같은 탭 동작 안에서 실행해야 iOS·팝업 차단에 안 걸린다
-  const e = curEntry(); const p = buildPrompt(e);
   const cp = copyText(p);
   const url = p.length < 6000 ? CLAUDE_URL + '?q=' + encodeURIComponent(p) : CLAUDE_URL;
   const w = window.open(url, '_blank');
-  cp.then(ok => toast(ok ? '📋 첨삭 요청을 복사했어요. 입력창이 비어 있으면 붙여넣고 보내세요.' : '복사가 안 됐어요. "요청문 보기"에서 직접 복사해주세요.', 3500));
+  cp.then(ok => toast(ok ? '📋 요청을 복사했어요. 입력창이 비어 있으면 붙여넣고 보내세요.' : '복사가 안 됐어요. "요청문 보기"에서 직접 복사해주세요.', 3500));
   if (!w) setTimeout(() => { location.href = url; }, 400);
 }
+function sendToClaude() { openClaudeWith(buildPrompt(curEntry())); }
 async function copyOnly() { const ok = await copyText(buildPrompt(curEntry())); toast(ok ? '📋 복사했어요' : '복사 실패 — 요청문을 길게 눌러 복사하세요'); }
-function showPrompt() { openOverlay(`<h2>첨삭 요청문</h2><p>길게 눌러 전체 선택 → 복사하세요.</p><textarea rows="14" readonly style="font-size:13px">${esc(buildPrompt(curEntry()))}</textarea><button class="flip" onclick="closeOverlay()">닫기</button>`); }
+function showPrompt(which) { const e = curEntry(); openOverlay(`<h2>요청문</h2><p>길게 눌러 전체 선택 → 복사하세요.</p><textarea rows="14" readonly style="font-size:13px">${esc(which === 'recheck' ? buildRecheckPrompt(e) : buildPrompt(e))}</textarea><button class="flip" onclick="closeOverlay()">닫기</button>`); }
 function renderRequest(el, e) {
   let h = `<div class="pill-group" style="margin-bottom:10px"><button class="ghost sm" onclick="wrView.mode='home';renderWrite()">← 목록</button><button class="ghost sm" onclick="e_backToEdit()">✏️ 글 고치기</button></div>`;
   h += `<div class="card"><b>Claude에게 첨삭받기</b>
@@ -660,13 +734,14 @@ function renderRequest(el, e) {
       <div class="btn-row" style="margin-top:10px"><button class="big gK" onclick="sendToClaude()">Claude 열기 ↗</button><button class="ghost" onclick="copyOnly()">복사만</button><button class="ghost" onclick="showPrompt()">요청문 보기</button></div></div></div>
     <div class="step"><div class="num">2</div><div style="flex:1"><b>Claude 답변 붙여넣기</b><div class="sub">Claude 답변의 코드블록(json)을 통째로 복사해 여기에 붙여넣으세요. 답변 전체를 붙여넣어도 돼요.</div>
       <textarea id="fbPaste" rows="7" placeholder="여기에 붙여넣기" style="font-size:13px">${esc(e.fbRaw || '')}</textarea>
-      <div class="btn-row"><button class="ghost" onclick="pasteFromClipboard()">📋 클립보드에서 붙여넣기</button><button class="big g3" onclick="applyFeedback()">첨삭 반영</button></div></div></div>
+      <div class="btn-row"><button class="ghost" onclick="pasteInto('fbPaste')">📋 클립보드에서 붙여넣기</button><button class="big g3" onclick="applyFeedback()">첨삭 반영</button></div></div></div>
   </div>`;
+  h += missionBox(e, false);
   h += `<div class="card"><div class="sub">내가 쓴 글 · ${e.words}단어</div><div class="journal-text" style="margin-top:8px">${esc(e.text)}</div></div>`;
   el.innerHTML = h;
 }
 function e_backToEdit() { const e = curEntry(); e.status = 'draft'; save(); wrView.mode = 'edit'; renderWrite(); }
-async function pasteFromClipboard() { try { const t = await navigator.clipboard.readText(); $('fbPaste').value = t; toast('붙여넣었어요'); } catch (e) { toast('입력칸을 길게 눌러 붙여넣기 해주세요'); } }
+async function pasteInto(id) { try { const t = await navigator.clipboard.readText(); $(id).value = t; toast('붙여넣었어요'); } catch (e) { toast('입력칸을 길게 눌러 붙여넣기 해주세요'); } }
 function extractJSON(raw) {
   let s = String(raw || '').trim(); if (!s) return null;
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i); if (fence) s = fence[1];
@@ -676,30 +751,45 @@ function extractJSON(raw) {
   for (const t of tries) { try { const o = JSON.parse(t); if (o && typeof o === 'object') return o; } catch (e) { } }
   return null;
 }
+const _str = v => (v == null ? '' : typeof v === 'string' ? v : JSON.stringify(v));
+const _arr = v => Array.isArray(v) ? v : (v ? [v] : []);
+const _objs = v => _arr(v).filter(x => x && typeof x === 'object');
+const _bool = v => v === true || v === 'true' || v === 'sí' || v === 'yes';
+function sanErrors(v) { return _objs(v).map(x => ({ orig: _str(x.orig), fix: _str(x.fix), type: _str(x.type) || '기타', why: _str(x.why) })).slice(0, 10); }
+function sanMission(v) { return _objs(v).map(x => ({ structure: _str(x.structure), used: _bool(x.used), correct: _bool(x.correct), found: _str(x.found), fix: _str(x.fix), note: _str(x.note) })).slice(0, 4); }
 function sanitizeFb(o) {
-  const str = v => (v == null ? '' : typeof v === 'string' ? v : JSON.stringify(v));
-  const arr = v => Array.isArray(v) ? v : (v ? [v] : []);
   return {
-    summary: str(o.summary), level: str(o.level), good: arr(o.good).map(str).filter(Boolean),
-    errors: arr(o.errors).filter(x => x && typeof x === 'object').map(x => ({ orig: str(x.orig), fix: str(x.fix), type: str(x.type) || '기타', why: str(x.why) })).slice(0, 10),
-    corrected: str(o.corrected), natural: str(o.natural),
-    cards: arr(o.cards).filter(x => x && typeof x === 'object' && x.es).map(x => ({ es: str(x.es), ko: str(x.ko), point: str(x.point) })).slice(0, 8),
-    targets_check: str(o.targets_check), next: str(o.next),
+    summary: _str(o.summary), level: _str(o.level), good: _arr(o.good).map(_str).filter(Boolean),
+    errors: sanErrors(o.errors), mission_check: sanMission(o.mission_check),
+    upgrades: _objs(o.upgrades).filter(x => x.up).map(x => ({ orig: _str(x.orig), up: _str(x.up), structure: _str(x.structure), why: _str(x.why) })).slice(0, 6),
+    native: _objs(o.native).filter(x => x.native).map(x => ({ orig: _str(x.orig), native: _str(x.native), why: _str(x.why) })).slice(0, 6),
+    corrected: _str(o.corrected), natural: _str(o.natural),
+    cards: _objs(o.cards).filter(x => x.es).map(x => ({ es: _str(x.es), ko: _str(x.ko), point: _str(x.point) })).slice(0, 8),
+    targets_check: _str(o.targets_check), next: _str(o.next),
   };
+}
+function formatFailOverlay(keepFn) {
+  openOverlay(`<h2>형식을 읽지 못했어요</h2><p>Claude 답변에서 JSON을 찾지 못했어요. 아래 문장을 복사해 같은 Claude 대화에 보내면 형식을 맞춰서 다시 줘요.</p>
+    <textarea rows="3" readonly style="font-size:13px">방금 요청한 JSON 형식 그대로, \`\`\`json 코드블록 하나로만 다시 출력해줘.</textarea>
+    <button class="flip" onclick="copyText('방금 요청한 JSON 형식 그대로, \`\`\`json 코드블록 하나로만 다시 출력해줘.').then(()=>toast('복사했어요'))">문장 복사</button>
+    ${keepFn ? `<button class="ghost" style="width:100%;margin-top:8px" onclick="${keepFn}()">그냥 텍스트로 저장하기</button>` : ''}
+    <button class="ghost" style="width:100%;margin-top:8px" onclick="closeOverlay()">닫기</button>`);
+}
+function recordMission(e, checks, stage) {
+  // 미션 구조 숙련도: 첫 첨삭과 재검사 각각 1회씩 집계
+  S.stats.mission = S.stats.mission || {};
+  (e.mission || []).forEach((id, i) => {
+    const c = checks[i]; if (!c) return;
+    const m = S.stats.mission[id] = S.stats.mission[id] || { try: 0, ok: 0 };
+    m.try++; if (c.used && c.correct) m.ok++;
+  });
+  e['missionLogged_' + stage] = true;
 }
 function applyFeedback() {
   const e = curEntry(); const raw = $('fbPaste').value; e.fbRaw = raw;
   if (!raw.trim()) { toast('Claude 답변을 먼저 붙여넣어 주세요'); return; }
   const o = extractJSON(raw);
-  if (!o) {
-    save();
-    openOverlay(`<h2>형식을 읽지 못했어요</h2><p>Claude 답변에서 JSON을 찾지 못했어요. 아래 문장을 복사해 같은 Claude 대화에 보내면 형식을 맞춰서 다시 줘요.</p>
-      <textarea rows="3" readonly style="font-size:13px">방금 첨삭을 요청한 JSON 형식 그대로, \`\`\`json 코드블록 하나로만 다시 출력해줘.</textarea>
-      <button class="flip" onclick="copyText('방금 첨삭을 요청한 JSON 형식 그대로, \`\`\`json 코드블록 하나로만 다시 출력해줘.').then(()=>toast('복사했어요'))">문장 복사</button>
-      <button class="ghost" style="width:100%;margin-top:8px" onclick="keepRawFeedback()">그냥 텍스트로 저장하기</button>
-      <button class="ghost" style="width:100%;margin-top:8px" onclick="closeOverlay()">닫기</button>`);
-    return;
-  }
+  if (!o) { save(); formatFailOverlay('keepRawFeedback'); return; }
   const fb = sanitizeFb(o);
   if (!fb.corrected && !fb.errors.length) { toast('첨삭 내용이 비어 있어요. 답변을 다시 확인해주세요.'); return; }
   const first = !e.fb; e.fb = fb; e.status = 'reviewed'; e.reviewedAt = new Date().toISOString();
@@ -707,9 +797,23 @@ function applyFeedback() {
     fb.errors.forEach(x => { const t = x.type || '기타'; S.stats.writeErr[t] = (S.stats.writeErr[t] || 0) + 1; const tag = '작문·' + t; S.stats.tags[tag] = S.stats.tags[tag] || { ok: 0, bad: 0 }; S.stats.tags[tag].bad++; });
     e.cardSel = fb.cards.map(() => true);
   }
+  if (!e.missionLogged_first && fb.mission_check.length) recordMission(e, fb.mission_check, 'first');
   save(); wrView.mode = 'result'; renderWrite(); window.scrollTo(0, 0);
 }
-function keepRawFeedback() { const e = curEntry(); e.fb = { summary: '', level: '', good: [], errors: [], corrected: '', natural: '', cards: [], targets_check: '', next: '', rawOnly: e.fbRaw }; e.status = 'reviewed'; save(); closeOverlay(); wrView.mode = 'result'; renderWrite(); }
+function keepRawFeedback() { const e = curEntry(); e.fb = { summary: '', level: '', good: [], errors: [], mission_check: [], upgrades: [], native: [], corrected: '', natural: '', cards: [], targets_check: '', next: '', rawOnly: e.fbRaw }; e.status = 'reviewed'; save(); closeOverlay(); wrView.mode = 'result'; renderWrite(); }
+function missionCheckHTML(e, checks) {
+  if (!checks || !checks.length) return '';
+  return checks.map((c, i) => {
+    const g = GRAM_BY_ID[(e.mission || [])[i]];
+    const icon = c.used && c.correct ? '✅' : c.used ? '⚠️' : '❌';
+    const label = c.used && c.correct ? '성공' : c.used ? '시도했지만 오류' : '안 씀';
+    return `<div class="err" style="border-left-color:${c.used && c.correct ? 'var(--ok)' : c.used ? 'var(--warn)' : 'var(--bad)'};background:#fafafa">${icon} <b>${esc(c.structure || (g && g.name) || '')}</b> <span class="tag">${label}</span>
+      ${c.found ? `<br><span class="sub">내 문장:</span> ${esc(c.found)}` : ''}
+      ${c.fix ? `<br><span class="sub">${c.used ? '고치면' : '이렇게 써볼 수 있어요'}:</span> <span class="f">${esc(c.fix)}</span> <button class="speak-btn" onclick="speak(${jsAttr(c.fix)})">🔊</button>` : ''}
+      ${c.note ? `<br><span class="sub">${esc(c.note)}</span>` : ''}</div>`;
+  }).join('');
+}
+function jsAttr(s) { return esc(JSON.stringify(String(s))); }
 function renderResult(el, e) {
   const fb = e.fb || {};
   let h = `<div class="pill-group" style="margin-bottom:10px"><button class="ghost sm" onclick="wrView.mode='home';renderWrite()">← 목록</button><button class="ghost sm" onclick="wrView.mode='request';renderWrite()">첨삭 다시 붙여넣기</button></div>`;
@@ -717,26 +821,58 @@ function renderResult(el, e) {
   if (fb.rawOnly) h += `<div class="journal-text" style="font-size:14px">${esc(fb.rawOnly)}</div>`;
   if (fb.summary) h += `<div style="line-height:1.7">${esc(fb.summary)}</div>`;
   if (fb.good && fb.good.length) h += `<div class="detail"><b>👍 잘한 점</b><br>${fb.good.map(g => '• ' + esc(g)).join('<br>')}</div>`;
-  if (fb.targets_check) h += `<div class="detail"><b>🎯 표현 사용</b> ${esc(fb.targets_check)}</div>`;
+  if (fb.targets_check) h += `<div class="detail"><b>표현 사용</b> ${esc(fb.targets_check)}</div>`;
   h += `</div>`;
+  if (fb.mission_check && fb.mission_check.length) h += `<div class="card"><b>🎯 문법 미션 결과</b>${missionCheckHTML(e, fb.mission_check)}</div>`;
   if (fb.errors && fb.errors.length) h += `<div class="card"><b>고칠 점 ${fb.errors.length}개</b>` + fb.errors.map(x => `<div class="err"><span class="tag red" style="font-size:11px">${esc(x.type)}</span><br><span class="o">${esc(x.orig)}</span> → <span class="f">${esc(x.fix)}</span><br><span class="sub">${esc(x.why)}</span></div>`).join('') + `</div>`;
-  if (fb.corrected) h += `<div class="card"><b>고친 글</b> <button class="speak-btn" onclick="speak(curEntry().fb.corrected)">🔊</button><div class="journal-text" style="margin-top:8px">${esc(fb.corrected)}</div></div>`;
-  if (fb.natural) h += `<div class="card"><b>원어민이라면 이렇게</b> <button class="speak-btn" onclick="speak(curEntry().fb.natural)">🔊</button><div class="journal-text" style="margin-top:8px">${esc(fb.natural)}</div></div>`;
+  if (fb.upgrades && fb.upgrades.length) {
+    h += `<div class="card"><b>⬆️ B2로 끌어올리기</b> <span class="sub">같은 뜻, 한 단계 위 문법</span>` + fb.upgrades.map((u, i) => {
+      const have = S.mine.some(m => m.text === u.up);
+      return `<div class="err" style="border-left-color:var(--blue);background:#f5f8fc">${u.structure ? `<span class="tag" style="background:#e3edf8;color:var(--blue);font-size:11px">${esc(u.structure)}</span><br>` : ''}<span class="sub">내 문장:</span> ${esc(u.orig)}<br><b>→ ${esc(u.up)}</b> <button class="speak-btn" onclick="speak(curEntry().fb.upgrades[${i}].up)">🔊</button><br><span class="sub">${esc(u.why)}</span>
+        <div style="margin-top:6px"><button class="ghost sm" ${have ? 'disabled' : ''} onclick="addUpgradeCard(${i})">${have ? '카드 추가됨' : '+ 카드'}</button></div></div>`;
+    }).join('') + `</div>`;
+  }
+  if (fb.native && fb.native.length) h += `<div class="card"><b>🗣️ 원어민 톤</b> <span class="sub">문법은 맞지만 교과서투인 표현</span>` + fb.native.map((n, i) => `<div class="err" style="border-left-color:#8a6d3b;background:#fbf8f2"><span class="sub">내 표현:</span> ${esc(n.orig)}<br><b>→ ${esc(n.native)}</b> <button class="speak-btn" onclick="speak(curEntry().fb.native[${i}].native)">🔊</button><br><span class="sub">${esc(n.why)}</span></div>`).join('') + `</div>`;
+  if (fb.corrected) h += `<div class="card"><b>고친 글</b> <span class="sub">최소 수정</span> <button class="speak-btn" onclick="speak(curEntry().fb.corrected)">🔊</button><div class="journal-text" style="margin-top:8px">${esc(fb.corrected)}</div></div>`;
+  if (fb.natural) h += `<div class="card"><b>B2+ 원어민 버전</b> <button class="speak-btn" onclick="speak(curEntry().fb.natural)">🔊</button><div class="journal-text" style="margin-top:8px">${esc(fb.natural)}</div></div>`;
   if (fb.cards && fb.cards.length) {
     const added = !!e.cardsAdded;
     h += `<div class="card"><b>복습 카드로 만들기</b> <span class="sub">'오늘' 탭 새 문장으로 먼저 나와요</span>` + fb.cards.map((c, i) => `<label class="expr" style="cursor:pointer"><div><b>${esc(c.es)}</b><div class="sub">${esc(c.ko)}${c.point ? ' · ' + esc(c.point) : ''}</div></div><input type="checkbox" ${(e.cardSel || [])[i] !== false ? 'checked' : ''} ${added ? 'disabled' : ''} onchange="curEntry().cardSel[${i}]=this.checked;save()" style="width:22px;height:22px;flex:none"></label>`).join('') +
       `<div class="btn-row">${added ? '<span class="tag green" style="padding:10px 14px">✓ 카드 ' + e.cardsAdded + '개 추가됨</span>' : '<button class="big g4" onclick="addFbCards()">선택한 문장 카드로 추가</button>'}</div></div>`;
   }
   if (fb.next) h += `<div class="card"><b>➡️ 다음 글에서</b><div class="detail">${esc(fb.next)}</div></div>`;
-  // 다시 쓰기
-  h += `<div class="card"><b>✍️ 다시 쓰기</b><div class="sub">첨삭을 보지 않고(또는 보면서) 같은 내용을 다시 써보세요. 고친 걸 손으로 한 번 더 쓰는 게 가장 오래 남아요.</div>
+  // 레벨업 다시 쓰기
+  h += `<div class="card" style="border-color:#b9dcbb"><b>✍️ 레벨업 다시 쓰기</b><div class="sub">같은 내용을 다시 쓰되, <b>미션 구조 + 위 업그레이드 중 2개 이상</b>을 내 문장으로 녹여 넣으세요. 그대로 베끼기보다 조금 바꿔 쓰는 게 실력이 돼요.</div>
     <textarea id="rwText" rows="9" placeholder="다시 써보기" spellcheck="false">${esc(e.rewrite || '')}</textarea>
-    <div class="btn-row"><button class="ghost" onclick="toggleHideRef()">${wrView.hideRef ? '첨삭 보이기' : '첨삭 가리고 쓰기'}</button><button class="big g3" onclick="saveRewrite()">${e.status === 'done' ? '다시 쓰기 저장' : '완료'}</button></div>
-    ${e.rewrite && fb.corrected ? `<div class="detail"><b>고친 글과 비교</b><div class="diff-out" style="font-size:15px">${wordDiff(fb.corrected, e.rewrite).marked}</div><span class="sub">초록 = 내가 다시 쓴 글에 있는 단어, 빨강 = 빠진 단어</span></div>` : ''}</div>`;
+    <div class="btn-row"><button class="ghost" onclick="toggleHideRef()">${wrView.hideRef ? '첨삭 보이기' : '첨삭 가리고 쓰기'}</button><button class="big g3" onclick="saveRewrite()">${e.status === 'done' ? '다시 쓰기 저장' : '저장'}</button></div>`;
+  if (e.rewrite) {
+    h += `<div class="step"><div class="num">✓</div><div style="flex:1"><b>다시 쓴 글 검사받기</b><div class="sub">새로 넣은 B2 구조가 맞는지 Claude에게 한 번 더 확인받아요.</div>
+      <div class="btn-row"><button class="big gK" onclick="openClaudeWith(buildRecheckPrompt(curEntry()))">재검사 요청 ↗</button><button class="ghost" onclick="showPrompt('recheck')">요청문 보기</button></div>
+      <textarea id="rcPaste" rows="4" placeholder="재검사 답변 붙여넣기" style="font-size:13px">${esc(e.recheckRaw || '')}</textarea>
+      <div class="btn-row"><button class="ghost" onclick="pasteInto('rcPaste')">📋 붙여넣기</button><button class="big g3" onclick="applyRecheck()">재검사 반영</button></div></div></div>`;
+  }
+  if (e.recheck) {
+    const r = e.recheck;
+    h += `<div class="detail" style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)"><b>🔁 재검사 결과</b> ${esc(r.summary)}</div>` + missionCheckHTML(e, r.mission_check);
+    if (r.b2_used && r.b2_used.length) h += `<div class="detail"><b>제대로 쓴 B2 구조</b><br>${r.b2_used.map(s => '✅ ' + esc(s)).join('<br>')}</div>`;
+    if (r.errors.length) h += r.errors.map(x => `<div class="err"><span class="tag red" style="font-size:11px">${esc(x.type)}</span><br><span class="o">${esc(x.orig)}</span> → <span class="f">${esc(x.fix)}</span><br><span class="sub">${esc(x.why)}</span></div>`).join('');
+    else h += `<div class="detail" style="color:var(--ok)"><b>오류 없음 — 완벽해요! 🎉</b></div>`;
+  }
+  h += `</div>`;
   h += `<div class="card"><div class="sub">처음 쓴 글</div><div class="journal-text" style="margin-top:8px;color:var(--sub)">${esc(e.text)}</div></div>`;
   el.innerHTML = h;
   if (wrView.hideRef) document.querySelectorAll('#panel-write .card').forEach((c, i, all) => { if (!c.querySelector('#rwText') && i < all.length - 1) c.style.filter = 'blur(6px)'; });
 }
+function applyRecheck() {
+  const e = curEntry(); const raw = $('rcPaste').value; e.recheckRaw = raw;
+  if (!raw.trim()) { toast('재검사 답변을 먼저 붙여넣어 주세요'); return; }
+  const o = extractJSON(raw); if (!o) { save(); formatFailOverlay(null); return; }
+  e.recheck = { summary: _str(o.summary), errors: sanErrors(o.errors), mission_check: sanMission(o.mission_check), b2_used: _arr(o.b2_used).map(_str).filter(Boolean), corrected: _str(o.corrected) };
+  if (!e.missionLogged_recheck && e.recheck.mission_check.length) recordMission(e, e.recheck.mission_check, 'recheck');
+  e.recheck.errors.forEach(x => { const t = x.type || '기타'; S.stats.writeErr[t] = (S.stats.writeErr[t] || 0) + 1; });
+  save(); renderWrite(); toast('재검사 반영!');
+}
+function addUpgradeCard(i) { const e = curEntry(); const u = e.fb.upgrades[i]; const n = addMine([mkMine(u.up, u.orig ? '(내 문장) ' + u.orig : '', u.structure + (u.why ? ' — ' + u.why : ''), 'B2 업그레이드', u.structure)]); queueBuilt = false; toast(n ? '카드 추가! 한국어 칸에는 내 원래 문장이 나와요' : '이미 있는 문장이에요'); renderWrite(); }
 function toggleHideRef() { const ta = $('rwText'); if (ta) curEntry().rewrite = ta.value; wrView.hideRef = !wrView.hideRef; renderWrite(); }
 function addFbCards() {
   const e = curEntry(); const sel = e.fb.cards.filter((c, i) => (e.cardSel || [])[i] !== false);
@@ -746,7 +882,7 @@ function addFbCards() {
 function saveRewrite() {
   const e = curEntry(); e.rewrite = $('rwText').value; e.status = 'done'; e.doneAt = new Date().toISOString(); save();
   if (e.articleId) { const r = S.read[e.articleId] = S.read[e.articleId] || {}; r.wrote = true; save(); }
-  toast('✨ 저장했어요'); wrView.hideRef = false; renderWrite();
+  toast('✨ 저장했어요. 이제 재검사를 받아보세요'); wrView.hideRef = false; renderWrite();
 }
 
 /* ── 기록 ─────────────────────────────────── */
@@ -782,6 +918,8 @@ function renderRecord() {
   // 약점
   const errTop = Object.entries(S.stats.writeErr).sort((a, b) => b[1] - a[1]).slice(0, 8);
   if (errTop.length) { const m2 = errTop[0][1]; h += `<div class="card"><b>작문 오류 유형</b> <span class="sub">Claude 첨삭 누적</span>` + errTop.map(([k, v]) => `<div style="margin-top:10px"><div style="display:flex;justify-content:space-between;font-size:13px"><b>${esc(k)}</b><span class="sub">${v}회</span></div><div class="bar-wrap"><div class="bar" style="width:${v / m2 * 100}%;background:var(--bad)"></div></div></div>`).join('') + `</div>`; }
+  const msArr = GRAM_B2.map(g => ({ g, m: S.stats.mission[g.id] })).filter(x => x.m && x.m.try);
+  if (msArr.length) h += `<div class="card"><b>B2 구조 숙련도</b> <span class="sub">문법 미션 성공 / 시도</span>` + msArr.sort((a, b) => (a.m.ok / a.m.try) - (b.m.ok / b.m.try)).map(({ g, m }) => { const pc = Math.round(m.ok / m.try * 100); return `<div style="margin-top:10px"><div style="display:flex;justify-content:space-between;font-size:13px"><b>${esc(g.name)}</b><span class="sub">${m.ok}/${m.try}</span></div><div class="bar-wrap"><div class="bar" style="width:${pc}%;background:${pc >= 70 ? 'var(--ok)' : pc >= 40 ? 'var(--warn)' : 'var(--bad)'}"></div></div></div>`; }).join('') + `<div class="btn-row"><button class="ghost sm" onclick="showGrammarBook()">📘 구조 전체 보기</button></div></div>`;
   const tagArr = Object.keys(S.stats.tags).filter(k => !k.startsWith('작문·')).map(k => { const v = S.stats.tags[k]; const n = v.ok + v.bad; return { k, n, rate: n ? v.bad / n : 0 }; }).filter(x => x.n >= 5).sort((a, b) => b.rate - a.rate).slice(0, 8);
   if (tagArr.length) h += `<div class="card"><b>약점 문법</b> <span class="sub">카드·연습 오답률 (5회 이상)</span>` + tagArr.map(x => { const pc = Math.round(x.rate * 100); return `<div style="margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;font-size:13px"><b>${esc(x.k)}</b><span class="sub">${pc}% · ${x.n}회 <button class="ghost sm" onclick="focusGrammar('${jsq(x.k)}')">집중 복습</button></span></div><div class="bar-wrap"><div class="bar" style="width:${pc}%;background:var(--bad)"></div></div></div>`; }).join('') + `</div>`;
   const mw = Object.entries(S.stats.missWords).sort((a, b) => b[1] - a[1]).slice(0, 16);
