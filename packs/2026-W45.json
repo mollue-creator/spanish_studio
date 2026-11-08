@@ -1,0 +1,648 @@
+{
+  "id": "2026-W45",
+  "title": "11월 첫째 주 시사 팩",
+  "intro": "편지를 기다리는 Z세대, 사라져 가는 피레네 빙하, 비밀경찰 기록을 연 헝가리, 시간을 없애려던 노르웨이 섬.",
+  "created": "2026-11-08",
+  "articles": [
+    {
+      "id": "2026-W45-1",
+      "topic": "사회·문화",
+      "level": "B2",
+      "title": "La generación Z redescubre el placer de esperar una carta",
+      "title_ko": "편지를 기다리는 즐거움을 다시 발견한 Z세대",
+      "source": {
+        "name": "El País",
+        "date": "2026-11-06",
+        "url": "https://elpais.com/ciencia/2026-11-06/la-generacion-z-descubre-las-cartas-con-clubes-de-ciencia-puedes-estar-a-tu-bola-y-huir-del-scroll-infinito.html"
+      },
+      "summary_ko": "스페인 젊은이들 사이에서 월 10~12유로를 내고 손편지·일러스트·스티커를 우편으로 받는 '메일 클럽'이 인기다. 과학 클럽을 만든 공학자 클라우디아 레볼로는 매달 뇌·바다 같은 주제로 편지를 보내 소녀들의 과학 진로 관심을 키우려 한다. 영화·사진, 여성 과학자, 마법학교 콘셉트의 식물학 클럽도 있다. 화면에서 벗어나 느린 것을 기다리는 경험 자체가 매력이라는 분석.",
+      "paragraphs": [
+        "En plena era del «scroll infinito», cada vez más jóvenes españoles esperan con ilusión algo que parecía condenado a desaparecer: una carta en el buzón. Se trata de los llamados mail clubs, clubes de correspondencia a los que uno se suscribe por unos diez o doce euros al mes. A cambio, recibe un sobre con una carta escrita a mano, ilustraciones, postales, pegatinas y alguna que otra sorpresa.",
+        "Muchos de estos clubes giran en torno a la ciencia. Claudia Rebollo, una ingeniera de materiales nacida en el año 2000, fundó en mayo el Club de Ciencias, que ya cuenta con casi doscientas suscriptoras. Cada mes elige un tema —el cerebro, el océano, las células vegetales— y lo acompaña de datos curiosos y juegos. Cuando habló de la tecnología que hay detrás de un tomate, incluyó semillas para que sus lectoras pudieran plantarlas. Su objetivo es despertar vocaciones científicas, sobre todo entre las chicas.",
+        "Hay propuestas para todos los gustos. Un joven murciano dedica su club al cine y a la fotografía analógica; otra creadora habla en cada envío de mujeres científicas cuyo trabajo no se reconoció a tiempo, como la bióloga Rachel Carson; y otra ha inventado una academia de brujería ficticia para enseñar botánica.",
+        "¿Por qué funciona? Según sus creadoras, la carta ofrece un rato para estar «a tu bola», lejos de las pantallas. Una estudiante malagueña de quince años confiesa que mira el buzón cada vez que saca al perro: es la primera vez en su vida que espera una carta dirigida a ella. Además, gracias al club ha descubierto carreras que no conocía.",
+        "Lo curioso es que la generación que creció con el móvil en la mano esté descubriendo ahora el valor de la espera. Quizá no se trate de nostalgia, sino de una necesidad: tener algo que llegue despacio en un mundo en el que todo es inmediato."
+      ],
+      "glossary": [
+        {
+          "w": "buzón",
+          "ko": "우편함"
+        },
+        {
+          "w": "se suscribe",
+          "ko": "구독하다 (suscribirse)"
+        },
+        {
+          "w": "sobre",
+          "ko": "봉투"
+        },
+        {
+          "w": "pegatinas",
+          "ko": "스티커 (중남미: stickers/calcomanías)"
+        },
+        {
+          "w": "giran en torno a",
+          "ko": "~을 중심으로 돌아가다"
+        },
+        {
+          "w": "vocaciones",
+          "ko": "적성·진로에 대한 관심 (vocación)"
+        },
+        {
+          "w": "a tu bola",
+          "ko": "(스페인 구어) 남 신경 안 쓰고 내 마음대로"
+        },
+        {
+          "w": "envío",
+          "ko": "발송물, 한 번 보내는 것"
+        },
+        {
+          "w": "carreras",
+          "ko": "대학 전공, 진로 (carrera)"
+        },
+        {
+          "w": "inmediato",
+          "ko": "즉각적인"
+        }
+      ],
+      "expressions": [
+        {
+          "es": "Cada vez más jóvenes esperan con ilusión una carta.",
+          "ko": "점점 더 많은 젊은이들이 설레며 편지를 기다린다.",
+          "note": "cada vez más + 명사 / con ilusión = 설레며"
+        },
+        {
+          "es": "Se trata de un club al que uno se suscribe por diez euros al mes.",
+          "ko": "한 달에 10유로로 구독하는 클럽이다.",
+          "note": "se trata de = ~이다/~에 관한 것이다, 전치사 + 관계사 al que"
+        },
+        {
+          "es": "Los domingos me gusta estar a mi bola, lejos de las pantallas.",
+          "ko": "일요일엔 화면에서 떨어져 내 마음대로 지내는 게 좋아.",
+          "note": "스페인 구어 estar a mi/tu bola"
+        },
+        {
+          "es": "Quizá no se trate de nostalgia, sino de una necesidad.",
+          "ko": "어쩌면 향수가 아니라 필요의 문제일지도 모른다.",
+          "note": "quizá + 접속법 / no A sino B"
+        },
+        {
+          "es": "Gracias al club he descubierto carreras que no conocía.",
+          "ko": "그 클럽 덕분에 몰랐던 전공들을 알게 됐다.",
+          "note": "gracias a / 현재완료 + 불완료과거"
+        }
+      ],
+      "questions": [
+        {
+          "q": "¿Qué reciben los suscriptores de un mail club?",
+          "options": [
+            "Un correo electrónico semanal con enlaces",
+            "Un sobre con una carta escrita a mano y otros materiales",
+            "Un libro de ciencia al mes",
+            "Una caja de semillas para plantar"
+          ],
+          "answer": 1,
+          "explain": "carta escrita a mano, ilustraciones, postales, pegatinas…"
+        },
+        {
+          "q": "¿Cuál es el objetivo principal de Claudia Rebollo?",
+          "options": [
+            "Ganar dinero vendiendo ilustraciones",
+            "Despertar vocaciones científicas, sobre todo entre las chicas",
+            "Promocionar la fotografía analógica",
+            "Enseñar brujería"
+          ],
+          "answer": 1,
+          "explain": "«Su objetivo es despertar vocaciones científicas, sobre todo entre las chicas.»"
+        },
+        {
+          "q": "¿Qué tiene de especial la experiencia de la estudiante de Málaga?",
+          "options": [
+            "Escribe cartas a su abuela",
+            "Trabaja en una oficina de correos",
+            "Es la primera vez que espera una carta dirigida a ella",
+            "Ha fundado su propio club"
+          ],
+          "answer": 2,
+          "explain": "es la primera vez en su vida que espera una carta dirigida a ella"
+        },
+        {
+          "q": "Según el último párrafo, ¿por qué atrae este fenómeno a la generación Z?",
+          "options": [
+            "Porque las cartas son más baratas que internet",
+            "Porque ofrece algo lento en un mundo inmediato",
+            "Porque los colegios lo exigen",
+            "Porque no saben usar el correo electrónico"
+          ],
+          "answer": 1,
+          "explain": "tener algo que llegue despacio en un mundo en el que todo es inmediato"
+        }
+      ],
+      "discuss": [
+        {
+          "es": "¿Cuándo fue la última vez que recibiste una carta escrita a mano?",
+          "ko": "마지막으로 손편지를 받은 건 언제인가요?"
+        },
+        {
+          "es": "¿Crees que la tecnología nos ha quitado la capacidad de esperar?",
+          "ko": "기술이 우리에게서 기다리는 능력을 빼앗았다고 생각하나요?"
+        },
+        {
+          "es": "Si crearas tu propio club de cartas, ¿de qué tema sería?",
+          "ko": "내가 편지 클럽을 만든다면 주제는 무엇일까요?"
+        }
+      ],
+      "writing": {
+        "task_es": "Escribe un texto de opinión: ¿necesitamos desconectarnos de la tecnología de forma deliberada? Expón tu postura, da al menos dos argumentos y un ejemplo de tu propia vida.",
+        "task_ko": "의견문: 우리는 일부러 기술과의 연결을 끊을 필요가 있을까? 내 입장, 근거 2개 이상, 내 삶의 예시 하나.",
+        "words": "150–180",
+        "use": [
+          "cada vez más",
+          "se trata de",
+          "quizá"
+        ]
+      },
+      "words": 312
+    },
+    {
+      "id": "2026-W45-2",
+      "topic": "환경·과학",
+      "level": "B2",
+      "title": "Los últimos glaciares de España entran en su fase final",
+      "title_ko": "마지막 단계에 들어선 스페인의 마지막 빙하들",
+      "source": {
+        "name": "El País",
+        "date": "2026-11-03",
+        "url": "https://elpais.com/ciencia/2026-11-03/ano-catastrofico-para-los-ultimos-glaciares-de-espana-ya-es-posible-subir-hasta-la-cima-del-aneto-sin-pisar-hielo.html"
+      },
+      "summary_ko": "피레네 산맥의 빙하(스페인·남유럽의 마지막 빙하)가 2026년 관측 이래 세 번째로 나쁜 해를 기록했다. 봄에 눈이 많이 왔는데도 역대 가장 더운 여름(평년보다 3.4도 높음) 때문에 주요 빙하 3곳이 평균 2m 넘게 얇아졌다. 떨어진 돌이 얼음 위에 쌓여 빙하가 검게 변하고 녹는 속도가 빨라진다. 아네토 봉은 이제 얼음을 밟지 않고도 정상에 오를 수 있다. 과학자들은 10년 안에 사라질 것으로 본다.",
+      "paragraphs": [
+        "Los Pirineos albergan los últimos glaciares de España y de todo el sur de Europa, pero cada año queda menos de ellos. Según los datos del grupo de investigación CryoPyr, del Instituto Pirenaico de Ecología (CSIC), 2026 ha sido el tercer peor año desde que existen registros: los tres glaciares principales de la cordillera perdieron, de media, más de dos metros de espesor.",
+        "Lo más llamativo es que la primavera fue muy generosa en nieve, lo que en principio debería haber protegido el hielo. Sin embargo, el verano fue el más cálido jamás registrado en los Pirineos, con 3,4 grados por encima de la media de 1991-2020, y el calor se prolongó mucho más de lo habitual. «Si no hubiera nevado tanto en primavera, estaríamos hablando de un año devastador», explica Nacho López-Moreno, líder del grupo.",
+        "Además, los glaciares se están volviendo negros. Como el hielo apenas se mueve, las piedras que caen de las montañas se quedan encima, absorben el calor del sol y aceleran el deshielo. Es una de las señales más claras de que han entrado en su última fase.",
+        "Las cifras impresionan. En el Monte Perdido, algunas zonas perdieron hasta seis metros en un solo año, el equivalente a un edificio de dos plantas. En el Aneto, el pico más alto de la cordillera, el hielo se ha fragmentado en cuatro partes, y ya es posible llegar a la cima sin pisar hielo, algo impensable hace solo cuatro años.",
+        "Los modelos más pesimistas preveían que estos glaciares desaparecerían en menos de una década, y la realidad parece darles la razón. Para los científicos, los Pirineos son una ventana al futuro: lo que ocurre allí anticipa lo que podría pasar en los Alpes, los Andes o el Himalaya."
+      ],
+      "glossary": [
+        {
+          "w": "albergan",
+          "ko": "품고 있다, 보유하다 (albergar)"
+        },
+        {
+          "w": "espesor",
+          "ko": "두께"
+        },
+        {
+          "w": "cordillera",
+          "ko": "산맥"
+        },
+        {
+          "w": "llamativo",
+          "ko": "눈에 띄는, 놀라운"
+        },
+        {
+          "w": "se prolongó",
+          "ko": "길어졌다, 연장됐다 (prolongarse)"
+        },
+        {
+          "w": "apenas",
+          "ko": "거의 ~않다"
+        },
+        {
+          "w": "deshielo",
+          "ko": "얼음이 녹음, 해빙"
+        },
+        {
+          "w": "pisar",
+          "ko": "밟다"
+        },
+        {
+          "w": "cima",
+          "ko": "정상, 꼭대기"
+        },
+        {
+          "w": "preveían",
+          "ko": "예측했다 (prever)"
+        }
+      ],
+      "expressions": [
+        {
+          "es": "Si no hubiera nevado tanto, estaríamos hablando de un año devastador.",
+          "ko": "눈이 그렇게 많이 오지 않았다면 지금 최악의 해를 이야기하고 있을 것이다.",
+          "note": "혼합 가정문: si + 접속법 대과거, 조건법 현재"
+        },
+        {
+          "es": "Lo más llamativo es que la primavera fue muy generosa en nieve.",
+          "ko": "가장 놀라운 점은 봄에 눈이 아주 많이 왔다는 것이다.",
+          "note": "lo más + 형용사 + es que"
+        },
+        {
+          "es": "El calor se prolongó mucho más de lo habitual.",
+          "ko": "더위가 평소보다 훨씬 오래 이어졌다.",
+          "note": "más de lo habitual = 평소보다 더"
+        },
+        {
+          "es": "La realidad parece darles la razón.",
+          "ko": "현실이 그들의 말이 맞았음을 보여주는 듯하다.",
+          "note": "dar la razón a alguien = ~가 옳다고 인정하다"
+        },
+        {
+          "es": "Ya es posible llegar a la cima sin pisar hielo.",
+          "ko": "이제는 얼음을 밟지 않고도 정상에 오를 수 있다.",
+          "note": "sin + 동사원형 = ~하지 않고"
+        }
+      ],
+      "questions": [
+        {
+          "q": "¿Por qué sorprendieron los datos de 2026?",
+          "options": [
+            "Porque los glaciares crecieron",
+            "Porque hubo grandes pérdidas a pesar de una primavera con mucha nieve",
+            "Porque no se pudieron tomar medidas",
+            "Porque el invierno fue muy frío"
+          ],
+          "answer": 1,
+          "explain": "Lo más llamativo es que la primavera fue muy generosa en nieve…"
+        },
+        {
+          "q": "¿Por qué se oscurecen los glaciares?",
+          "options": [
+            "Por la contaminación de las ciudades",
+            "Porque las piedras se quedan sobre el hielo y absorben calor",
+            "Por el humo de los incendios",
+            "Por la falta de lluvia"
+          ],
+          "answer": 1,
+          "explain": "las piedras… se quedan encima, absorben el calor del sol y aceleran el deshielo"
+        },
+        {
+          "q": "¿Qué ha cambiado en el Aneto?",
+          "options": [
+            "Se ha cerrado al público",
+            "Ha aparecido un glaciar nuevo",
+            "Se puede llegar a la cima sin pisar hielo",
+            "Ha nevado más que nunca"
+          ],
+          "answer": 2,
+          "explain": "ya es posible llegar a la cima sin pisar hielo"
+        },
+        {
+          "q": "¿Qué significa que los Pirineos sean «una ventana al futuro»?",
+          "options": [
+            "Que tienen las mejores vistas de Europa",
+            "Que anticipan lo que puede pasar en otros glaciares del mundo",
+            "Que allí se prueban nuevas tecnologías",
+            "Que su clima no cambiará"
+          ],
+          "answer": 1,
+          "explain": "lo que ocurre allí anticipa lo que podría pasar en los Alpes, los Andes o el Himalaya"
+        }
+      ],
+      "discuss": [
+        {
+          "es": "¿Has notado algún efecto del cambio climático en tu vida diaria?",
+          "ko": "일상에서 기후 변화의 영향을 느낀 적이 있나요?"
+        },
+        {
+          "es": "¿Quién debería asumir más responsabilidad: los gobiernos, las empresas o los ciudadanos?",
+          "ko": "정부·기업·시민 중 누가 더 큰 책임을 져야 할까요?"
+        },
+        {
+          "es": "¿Tiene sentido intentar salvar algo que probablemente ya no se puede salvar?",
+          "ko": "아마 이미 구할 수 없는 것을 구하려 애쓰는 게 의미가 있을까요?"
+        }
+      ],
+      "writing": {
+        "task_es": "¿Qué medidas concretas debería tomar Corea frente al cambio climático? Escribe un texto argumentativo con al menos dos propuestas y valora sus ventajas e inconvenientes.",
+        "task_ko": "한국은 기후 변화에 맞서 어떤 구체적인 조치를 해야 할까? 제안 2개 이상과 각각의 장단점을 담은 논증문.",
+        "words": "150–180",
+        "use": [
+          "es imprescindible que",
+          "si no + subjuntivo",
+          "sin embargo"
+        ]
+      },
+      "words": 292
+    },
+    {
+      "id": "2026-W45-3",
+      "topic": "역사·정치",
+      "level": "B2",
+      "title": "Hungría abre los archivos de su antigua policía secreta",
+      "title_ko": "공산 시대 비밀경찰 기록을 공개한 헝가리",
+      "source": {
+        "name": "BBC Mundo",
+        "date": "2026-11-07",
+        "url": "https://www.bbc.com/mundo/articles/c6reyrrp39qqo"
+      },
+      "summary_ko": "헝가리가 1989년까지 이어진 공산 정권 시절 비밀경찰 기록 전체를 온라인에 공개하기 시작했다. 1956년 봉기 진압 70주년인 11월 4일에 첫 공개분이 나왔고, 협력자 5~6만 명이 기록에 있다. 누구나 제한 없이 검색할 수 있다는 점이 다른 나라와 다르다. 피해자들은 진실을 알 기회라고 환영하지만, 이미 죽었거나 다른 삶을 사는 사람들을 망신 주는 게 맞느냐는 우려도 있다.",
+      "paragraphs": [
+        "Durante las cuatro décadas de régimen comunista, que terminó en 1989, el Estado húngaro construyó una enorme red de vigilancia. Decenas de miles de ciudadanos fueron reclutados —a menudo mediante chantajes o sobornos— para espiar a sus vecinos, compañeros de trabajo, amigos e incluso familiares. Ahora, Hungría ha empezado a publicar en internet el archivo completo de aquella policía secreta.",
+        "La primera tanda de documentos vio la luz el 4 de noviembre, justo cuando se cumplían 70 años de la represión soviética del levantamiento de 1956. Según el director del Archivo Histórico de la Seguridad del Estado, en los expedientes figuran entre 50.000 y 60.000 colaboradores. La novedad es que cualquiera podrá consultarlos sin restricciones. En otros países, como Alemania o Polonia, los archivos se abrieron mucho antes, pero las búsquedas suelen limitarse a los expedientes personales o familiares.",
+        "La ley que lo permite se aprobó en septiembre y era una promesa del nuevo gobierno de Péter Magyar, que ganó las elecciones de abril frente a Viktor Orbán. Para muchas víctimas, es la oportunidad de entender por fin por qué fueron vigiladas, detenidas o interrogadas.",
+        "Sin embargo, no todos lo celebran. Péter «Sziámi» Müller, músico de la escena de rock alternativo de los años ochenta, al que la policía llevó a comisaría en varias ocasiones, duda de que la sociedad necesite señalar y avergonzar a personas que ya han muerto o que hoy llevan otra vida. Por su parte, Bálint Magyar, antiguo opositor y hoy investigador, cree que la publicación llega demasiado tarde para pedir responsabilidades, pero defiende su valor: «Una nación no puede seguir viviendo con mentiras sin afrontar su propio pasado».",
+        "El debate no es exclusivo de Hungría. ¿Hasta qué punto conocer la verdad ayuda a una sociedad a reconciliarse? ¿Y quién paga el precio de esa verdad?"
+      ],
+      "glossary": [
+        {
+          "w": "vigilancia",
+          "ko": "감시"
+        },
+        {
+          "w": "reclutados",
+          "ko": "포섭된, 모집된 (reclutar)"
+        },
+        {
+          "w": "chantajes",
+          "ko": "협박, 공갈 (chantaje)"
+        },
+        {
+          "w": "sobornos",
+          "ko": "뇌물 (soborno)"
+        },
+        {
+          "w": "tanda",
+          "ko": "한 차례분, 한 묶음"
+        },
+        {
+          "w": "levantamiento",
+          "ko": "봉기"
+        },
+        {
+          "w": "expedientes",
+          "ko": "기록 파일, 서류철 (expediente)"
+        },
+        {
+          "w": "figuran",
+          "ko": "(명단·기록에) 올라 있다 (figurar)"
+        },
+        {
+          "w": "avergonzar",
+          "ko": "망신을 주다"
+        },
+        {
+          "w": "afrontar",
+          "ko": "직면하다, 맞서다"
+        }
+      ],
+      "expressions": [
+        {
+          "es": "Los primeros documentos vieron la luz el 4 de noviembre.",
+          "ko": "첫 문서들이 11월 4일에 세상에 공개됐다.",
+          "note": "ver la luz = 공개·출간되다"
+        },
+        {
+          "es": "Dudo de que la sociedad necesite señalar a nadie.",
+          "ko": "사회가 누군가를 지목할 필요가 있을지 의문이다.",
+          "note": "dudar de que + 접속법"
+        },
+        {
+          "es": "Llega demasiado tarde para pedir responsabilidades.",
+          "ko": "책임을 묻기에는 너무 늦었다.",
+          "note": "pedir/exigir responsabilidades = 책임을 묻다"
+        },
+        {
+          "es": "Una nación no puede seguir viviendo con mentiras.",
+          "ko": "한 나라가 거짓 속에서 계속 살아갈 수는 없다.",
+          "note": "seguir + 현재분사 = 계속 ~하다"
+        },
+        {
+          "es": "¿Hasta qué punto conocer la verdad ayuda a reconciliarse?",
+          "ko": "진실을 아는 것이 화해에 어느 정도까지 도움이 될까?",
+          "note": "hasta qué punto = 어디까지, 어느 정도"
+        }
+      ],
+      "questions": [
+        {
+          "q": "¿Qué ha empezado a publicar Hungría?",
+          "options": [
+            "Las memorias de Viktor Orbán",
+            "El archivo completo de la policía secreta comunista",
+            "Una lista de espías actuales",
+            "Un libro sobre 1956"
+          ],
+          "answer": 1,
+          "explain": "el archivo completo de aquella policía secreta"
+        },
+        {
+          "q": "¿Por qué se eligió el 4 de noviembre?",
+          "options": [
+            "Era el día de las elecciones",
+            "Se cumplían 70 años de la represión del levantamiento de 1956",
+            "Era el aniversario de la caída del Muro de Berlín",
+            "Era la fecha de la nueva ley"
+          ],
+          "answer": 1,
+          "explain": "justo cuando se cumplían 70 años de la represión soviética del levantamiento de 1956"
+        },
+        {
+          "q": "¿Qué diferencia el archivo húngaro del de Alemania o Polonia?",
+          "options": [
+            "Es más antiguo",
+            "Solo pueden consultarlo las víctimas",
+            "Cualquiera puede consultarlo sin restricciones",
+            "Solo está en papel"
+          ],
+          "answer": 2,
+          "explain": "cualquiera podrá consultarlos sin restricciones"
+        },
+        {
+          "q": "¿Qué le preocupa a Péter Müller?",
+          "options": [
+            "Que los documentos sean falsos",
+            "Que se señale y avergüence a personas que ya han muerto o han cambiado de vida",
+            "Que el gobierno use los archivos contra la oposición",
+            "Que la ley no se apruebe"
+          ],
+          "answer": 1,
+          "explain": "duda de que la sociedad necesite señalar y avergonzar a personas…"
+        }
+      ],
+      "discuss": [
+        {
+          "es": "¿Es mejor conocer una verdad dolorosa o dejar el pasado en paz?",
+          "ko": "고통스러운 진실을 아는 게 나을까, 과거를 그대로 두는 게 나을까?"
+        },
+        {
+          "es": "¿Conoces algún caso parecido en la historia de Corea?",
+          "ko": "한국 역사에서 비슷한 사례를 알고 있나요?"
+        },
+        {
+          "es": "¿Debería juzgarse igual a quien colaboró bajo amenaza?",
+          "ko": "협박 때문에 협력한 사람도 똑같이 판단해야 할까요?"
+        }
+      ],
+      "writing": {
+        "task_es": "«Conocer la verdad sobre el pasado siempre ayuda a una sociedad.» ¿Estás de acuerdo? Argumenta tu opinión con algún ejemplo de la historia de Corea o de otro país.",
+        "task_ko": "\"과거의 진실을 아는 것은 언제나 사회에 도움이 된다.\" 동의하나요? 한국이나 다른 나라 역사의 예를 들어 의견을 논증하세요.",
+        "words": "150–180",
+        "use": [
+          "dudo que",
+          "hasta qué punto",
+          "por un lado… por otro…"
+        ]
+      },
+      "words": 302
+    },
+    {
+      "id": "2026-W45-4",
+      "topic": "여행·문화",
+      "level": "B2",
+      "title": "La isla noruega que quiso abolir el tiempo",
+      "title_ko": "시간을 없애려 했던 노르웨이의 섬",
+      "source": {
+        "name": "BBC Mundo",
+        "date": "2026-11-07",
+        "url": "https://www.bbc.com/mundo/articles/cmx2dxe1513jo"
+      },
+      "summary_ko": "2019년 북극권 노르웨이의 작은 어촌 소마뢰위가 백야 기간 동안 '시간 없는 구역'이 되겠다고 해 세계적 화제가 됐다. 하지만 사실은 국영 관광청이 꾸민 캠페인이었고, 많은 주민은 몰랐다. 몇 년 뒤 찾아간 BBC 기자는 상점이 정해진 시간에 닫긴 하지만 여름의 삶이 확실히 느슨하다는 걸 발견한다. 홍보용 술책이었어도 '우리가 시계를 지배하나, 시계가 우리를 지배하나'라는 질문을 남겼다.",
+      "paragraphs": [
+        "En 2019, Sommarøy, un pequeño pueblo pesquero del Ártico noruego, dio la vuelta al mundo con una propuesta sorprendente: convertirse en la primera «zona libre de tiempo» del planeta. La idea tenía cierta lógica, porque allí, entre el 18 de mayo y el 26 de julio, el sol nunca se pone. Se colgaron relojes en un puente y el dueño de un hotel entregó a un diputado una petición firmada por los vecinos.",
+        "Pero la historia no era exactamente lo que parecía. Pronto se supo que detrás de la campaña estaba Innovation Norway, la agencia pública que promueve el turismo, y que muchos habitantes ni siquiera estaban al tanto. El director de la agencia tuvo que pedir disculpas públicamente, los relojes desaparecieron del puente y la iniciativa cayó en el olvido.",
+        "Además, a muchos vecinos la idea les parecía absurda. ¿Cómo iba a funcionar un hotel sin horarios de entrada y salida? ¿Tendría que estar abierta la cafetería por si alguien quería almorzar a las cuatro de la mañana? ¿Y los niños, cuándo irían al colegio?",
+        "Años después, una periodista de la BBC viajó a la isla para comprobar qué quedaba de aquel sueño. Descubrió que, aunque las tiendas cierran a su hora, el verano allí sí transcurre de otra manera: si no hay clientes, el dueño de una tienda puede cerrar para irse a pescar, y los niños se acuestan tarde porque no tienen clase. Una turista polaca le contó que el primer día se sintió algo decepcionada, pero que, en cuanto apagó el móvil, empezó a relajarse.",
+        "Quizá la campaña fuera solo un truco publicitario, pero dejó una pregunta interesante: ¿somos nosotros quienes controlamos el reloj, o es el reloj el que nos controla a nosotros?"
+      ],
+      "glossary": [
+        {
+          "w": "pesquero",
+          "ko": "어업의 (pueblo pesquero = 어촌)"
+        },
+        {
+          "w": "dio la vuelta al mundo",
+          "ko": "전 세계에 퍼졌다, 세계적 화제가 됐다"
+        },
+        {
+          "w": "se pone",
+          "ko": "(해가) 지다 (ponerse el sol)"
+        },
+        {
+          "w": "estaban al tanto",
+          "ko": "알고 있었다 (estar al tanto)"
+        },
+        {
+          "w": "pedir disculpas",
+          "ko": "사과하다"
+        },
+        {
+          "w": "cayó en el olvido",
+          "ko": "잊혀졌다 (caer en el olvido)"
+        },
+        {
+          "w": "comprobar",
+          "ko": "확인하다"
+        },
+        {
+          "w": "transcurre",
+          "ko": "(시간이) 흐르다, 지나가다 (transcurrir)"
+        },
+        {
+          "w": "decepcionada",
+          "ko": "실망한"
+        },
+        {
+          "w": "truco publicitario",
+          "ko": "홍보용 술책"
+        }
+      ],
+      "expressions": [
+        {
+          "es": "La noticia dio la vuelta al mundo en pocos días.",
+          "ko": "그 소식은 며칠 만에 전 세계에 퍼졌다.",
+          "note": "dar la vuelta al mundo"
+        },
+        {
+          "es": "Muchos vecinos ni siquiera estaban al tanto.",
+          "ko": "많은 주민들은 그 사실조차 몰랐다.",
+          "note": "ni siquiera = ~조차 않다 / estar al tanto = 알고 있다"
+        },
+        {
+          "es": "En cuanto apagué el móvil, empecé a relajarme.",
+          "ko": "휴대폰을 끄자마자 긴장이 풀리기 시작했다.",
+          "note": "en cuanto = ~하자마자 (미래면 + 접속법)"
+        },
+        {
+          "es": "Quizá fuera solo un truco publicitario.",
+          "ko": "어쩌면 그저 홍보용 술책이었을지도 모른다.",
+          "note": "quizá + 접속법 과거"
+        },
+        {
+          "es": "¿Somos nosotros quienes controlamos el reloj?",
+          "ko": "시계를 지배하는 건 우리일까?",
+          "note": "강조 구문 ser + 주어 + quien(es)"
+        }
+      ],
+      "questions": [
+        {
+          "q": "¿Por qué Sommarøy propuso abolir el tiempo?",
+          "options": [
+            "Porque allí no hay relojes",
+            "Porque en verano el sol no se pone durante semanas",
+            "Porque el Parlamento lo exigió",
+            "Porque los pescadores no trabajan en verano"
+          ],
+          "answer": 1,
+          "explain": "entre el 18 de mayo y el 26 de julio, el sol nunca se pone"
+        },
+        {
+          "q": "¿Quién estaba realmente detrás de la campaña?",
+          "options": [
+            "Los niños del colegio",
+            "Un grupo de pescadores",
+            "Una agencia pública de turismo",
+            "Una periodista de la BBC"
+          ],
+          "answer": 2,
+          "explain": "detrás de la campaña estaba Innovation Norway, la agencia pública que promueve el turismo"
+        },
+        {
+          "q": "Según la periodista, ¿cómo es hoy el verano en la isla?",
+          "options": [
+            "Igual que en cualquier ciudad",
+            "Más flexible: algunas tiendas cierran si no hay clientes",
+            "Totalmente sin horarios",
+            "Cerrado a los turistas"
+          ],
+          "answer": 1,
+          "explain": "si no hay clientes, el dueño de una tienda puede cerrar para irse a pescar"
+        },
+        {
+          "q": "¿Qué le pasó a la turista polaca?",
+          "options": [
+            "Se fue el primer día",
+            "Perdió el móvil",
+            "Al principio se decepcionó, pero luego se relajó",
+            "Decidió quedarse a vivir allí"
+          ],
+          "answer": 2,
+          "explain": "el primer día se sintió algo decepcionada, pero… empezó a relajarse"
+        }
+      ],
+      "discuss": [
+        {
+          "es": "Si pudieras vivir un mes sin mirar el reloj, ¿lo harías?",
+          "ko": "한 달 동안 시계를 안 보고 살 수 있다면 그렇게 하겠어요?"
+        },
+        {
+          "es": "¿Qué opinas de las campañas de turismo que se inventan una historia?",
+          "ko": "이야기를 지어내는 관광 홍보 캠페인을 어떻게 생각하나요?"
+        },
+        {
+          "es": "¿En qué momentos del día sientes que el reloj te controla?",
+          "ko": "하루 중 언제 시계가 나를 지배한다고 느끼나요?"
+        }
+      ],
+      "writing": {
+        "task_es": "Algunos dicen que vivimos esclavos del reloj. ¿Estás de acuerdo? Escribe un texto de opinión y propón una forma realista de relacionarnos mejor con el tiempo.",
+        "task_ko": "우리가 시계의 노예로 산다는 말에 동의하나요? 의견문을 쓰고, 시간과 더 잘 지내는 현실적인 방법을 하나 제안하세요.",
+        "words": "150–180",
+        "use": [
+          "en cuanto",
+          "quizá",
+          "lo que más me preocupa es que"
+        ]
+      },
+      "words": 288
+    }
+  ]
+}
