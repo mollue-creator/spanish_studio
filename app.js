@@ -1,7 +1,7 @@
 /* 문장장 스튜디오 v3 — 스페인어 전용 PWA
    오늘(SRS) · 연습(받아쓰기/말하기/드릴/롤플레이) · 읽기(주간 시사 팩) · 쓰기(일기 + Claude 첨삭) · 기록 */
 'use strict';
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.2.0';
 const LS_KEY = 'estudio_v3';
 const LEVELS = ['B1', 'B2', 'C1'];
 const INTERVALS = [0, 1, 3, 7, 16, 35, 80];
@@ -525,45 +525,122 @@ function pickTargets(n) {
   return out;
 }
 /* ── B2 문법 미션: DELE B2 작문에서 '자유자재로' 써야 하는 구조 ── */
+const GRAM_CATS = [
+  { id: '접속법', desc: '감정·의심·가치판단·목적·미래 시간절 뒤에서 쓰는 법(法). B2 문법의 기둥' },
+  { id: '가정문', desc: '현재·과거 사실과 반대되는 가정. 후회·비판·제안에 필수' },
+  { id: '추측 표현', desc: '미래·조건법으로 "~겠지, ~였나 봐"를 말하기. 원어민은 매일 쓰는데 학습자는 거의 안 씀' },
+  { id: '과거 시제', desc: '대과거로 시간 순서를, 불완료로 배경을 깔기' },
+  { id: '간접화법', desc: '남의 말을 전할 때 시제가 하나씩 뒤로 밀림. DELE 편지·이메일 과제 단골' },
+  { id: '변화 동사', desc: '"~해지다/~가 되다"를 변화의 성격에 따라 다른 동사로. 한국인 최대 약점' },
+  { id: '동사 우언법', desc: '동사+동사로 기간·반복·시작·중단의 뉘앙스를 정밀하게' },
+  { id: '대명사·lo', desc: '비의지 se, 목적어 중복, 중성 lo — 원어민 냄새가 나는 구조' },
+  { id: '관계사', desc: '짧은 문장 나열을 한 문장으로 엮는 고급 관계사' },
+  { id: '무인칭·축약', desc: '수동·무인칭으로 객관적 톤, 부정사·분사로 문장 압축' },
+  { id: '비교·강조', desc: '비례 비교, 결과절, 강조 구문, 의미가 바뀌는 ser/estar' },
+  { id: '연결어', desc: 'pero/porque/entonces를 벗어나 글의 층위를 올리는 담화 표지' },
+];
 const GRAM_B2 = [
-  { id: 'emo', name: '감정 + que + 접속법', pat: 'Me alegra / Me molesta / Me sorprende que + subj.', ko: '감정·반응 뒤 que절은 접속법', ex: 'Me molesta que la gente no respete los turnos.', exko: '사람들이 순서를 안 지키는 게 거슬린다.' },
-  { id: 'emo_past', name: '감정(과거) + 접속법 과거', pat: 'Me sorprendió que + imperf. subj.', ko: '주절이 과거면 접속법 과거로 시제 일치', ex: 'Me sorprendió que nadie dijera nada.', exko: '아무도 아무 말 안 한 게 놀라웠다.' },
-  { id: 'duda', name: '부정·의심 + 접속법', pat: 'No creo que / Dudo que / No es verdad que + subj.', ko: '확신이 없으면 접속법 (creo que는 직설법)', ex: 'No creo que sea tan sencillo como parece.', exko: '보이는 것만큼 간단하지는 않을 것 같다.' },
-  { id: 'valor', name: '가치 판단 + que + 접속법', pat: 'Es fundamental / lógico / preocupante que + subj.', ko: '평가·필요를 말하는 무인칭 표현 뒤 접속법', ex: 'Es fundamental que el gobierno invierta más en vivienda.', exko: '정부가 주거에 더 투자하는 것이 중요하다.' },
-  { id: 'loque', name: 'Lo que más… es que + 접속법', pat: 'Lo que más me preocupa es que + subj.', ko: '강조 구문 — 의견문 첫 문장으로 강력함', ex: 'Lo que más me preocupa es que no se haga nada.', exko: '가장 걱정되는 건 아무것도 안 한다는 점이다.' },
-  { id: 'cuando', name: '미래 시점 cuando + 접속법', pat: 'Cuando / En cuanto / Hasta que + subj. (미래)', ko: '아직 안 일어난 일의 시간절은 접속법', ex: 'Cuando termine el curso, me tomaré unas vacaciones.', exko: '수업이 끝나면 휴가를 갈 거다.' },
-  { id: 'aunque', name: '양보 aunque + 접속법', pat: 'Aunque + subj. (설령 ~라도)', ko: '직설법=사실 인정, 접속법=가정·상관없음', ex: 'Aunque sea caro, merece la pena.', exko: '비싸더라도 그럴 가치가 있다.' },
-  { id: 'paraque', name: '목적 para que + 접속법', pat: 'Para que / Sin que / Antes de que + subj.', ko: '주어가 다른 목적·조건절은 접속법', ex: 'Lo explico despacio para que todos lo entiendan.', exko: '모두가 이해하도록 천천히 설명한다.' },
-  { id: 'rel', name: '불특정 선행사 + 접속법', pat: 'Necesitamos algo / alguien que + subj.', ko: '존재가 확정되지 않은 대상을 꾸미는 관계절', ex: 'Necesitamos políticas que protejan a los jóvenes.', exko: '젊은이들을 보호할 정책이 필요하다.' },
-  { id: 'si2', name: '현재 반사실 가정', pat: 'Si + imperf. subj., condicional', ko: '지금 사실과 반대되는 가정', ex: 'Si tuviera más tiempo, aprendería a tocar el piano.', exko: '시간이 더 있다면 피아노를 배울 텐데.' },
-  { id: 'si3', name: '과거 반사실 가정', pat: 'Si + pluscuamp. subj., condicional compuesto', ko: '과거에 일어나지 않은 일의 가정 (후회·비판)', ex: 'Si hubiera estudiado más, habría aprobado.', exko: '더 공부했더라면 합격했을 텐데.' },
-  { id: 'ojala', name: '소망 ojalá', pat: 'Ojalá + pres. subj. / imperf. subj.', ko: '현재형=가능한 바람, 과거형=가능성 낮은 바람', ex: 'Ojalá pudiéramos cambiar las cosas más rápido.', exko: '더 빨리 바꿀 수 있으면 좋을 텐데.' },
-  { id: 'comosi', name: 'como si + 접속법 과거', pat: 'Como si + imperf./pluscuamp. subj.', ko: '마치 ~인 것처럼 (항상 접속법 과거 계열)', ex: 'Habla como si lo supiera todo.', exko: '그는 다 아는 것처럼 말한다.' },
-  { id: 'pormucho', name: 'Por mucho que + 접속법', pat: 'Por mucho que / Por más que + subj.', ko: '아무리 ~해도 (강한 양보)', ex: 'Por mucho que lo intente, no consigo madrugar.', exko: '아무리 해도 일찍 못 일어나겠다.' },
-  { id: 'cond', name: '조건 접속사 + 접속법', pat: 'A no ser que / Siempre que / Con tal de que + subj.', ko: '조건·예외를 정교하게 (si보다 B2다움)', ex: 'Iré a la reunión, a no ser que surja algo urgente.', exko: '급한 일이 생기지 않는 한 회의에 갈 거다.' },
-  { id: 'indirecto', name: '간접 명령·요청 + 접속법 과거', pat: 'Me pidió / Me aconsejó que + imperf. subj.', ko: '과거의 요청·충고를 전달할 때', ex: 'Mi profesora me aconsejó que leyera más prensa.', exko: '선생님이 신문을 더 읽으라고 조언했다.' },
-  { id: 'pasiva', name: '무인칭·수동 se', pat: 'Se ha demostrado que… / Se debería + inf.', ko: '논증문에서 주어를 숨기고 객관적 톤 만들기', ex: 'Se ha demostrado que leer en papel mejora la comprensión.', exko: '종이로 읽는 것이 이해를 높인다는 것이 입증됐다.' },
-  { id: 'conect', name: '논증 연결어', pat: 'No obstante, Por consiguiente, Cabe destacar que, En definitiva', ko: 'pero/porque/entonces만 쓰면 B1 — 글의 층위를 올리는 연결어', ex: 'Cabe destacar, no obstante, que los datos son limitados.', exko: '다만 데이터가 제한적이라는 점은 짚어둘 만하다.' },
+  // 접속법
+  { id: 'emo', cat: '접속법', name: '감정 + que + 접속법', pat: 'Me alegra / Me molesta / Me sorprende que + subj.', ko: '감정·반응 뒤 que절은 접속법', ex: 'Me molesta que la gente no respete los turnos.', exko: '사람들이 순서를 안 지키는 게 거슬린다.' },
+  { id: 'emo_past', cat: '접속법', name: '감정(과거) + 접속법 과거', pat: 'Me sorprendió que + imperf. subj.', ko: '주절이 과거면 접속법 과거로 시제 일치', ex: 'Me sorprendió que nadie dijera nada.', exko: '아무도 아무 말 안 한 게 놀라웠다.' },
+  { id: 'duda', cat: '접속법', name: '부정·의심 + 접속법', pat: 'No creo que / Dudo que / No es verdad que + subj.', ko: '확신이 없으면 접속법 (creo que는 직설법)', ex: 'No creo que sea tan sencillo como parece.', exko: '보이는 것만큼 간단하지는 않을 것 같다.' },
+  { id: 'valor', cat: '접속법', name: '가치 판단 + que + 접속법', pat: 'Es fundamental / lógico / preocupante que + subj.', ko: '평가·필요를 말하는 무인칭 표현 뒤 접속법', ex: 'Es fundamental que el gobierno invierta más en vivienda.', exko: '정부가 주거에 더 투자하는 것이 중요하다.' },
+  { id: 'loque', cat: '접속법', name: 'Lo que más… es que + 접속법', pat: 'Lo que más me preocupa es que + subj.', ko: '강조 구문 — 의견문 첫 문장으로 강력함', ex: 'Lo que más me preocupa es que no se haga nada.', exko: '가장 걱정되는 건 아무것도 안 한다는 점이다.' },
+  { id: 'cuando', cat: '접속법', name: '미래 시점 cuando + 접속법', pat: 'Cuando / En cuanto / Hasta que + subj. (미래)', ko: '아직 안 일어난 일의 시간절은 접속법', ex: 'Cuando termine el curso, me tomaré unas vacaciones.', exko: '수업이 끝나면 휴가를 갈 거다.' },
+  { id: 'aunque', cat: '접속법', name: '양보 aunque + 접속법', pat: 'Aunque + subj. (설령 ~라도)', ko: '직설법=사실 인정, 접속법=가정·상관없음', ex: 'Aunque sea caro, merece la pena.', exko: '비싸더라도 그럴 가치가 있다.' },
+  { id: 'paraque', cat: '접속법', name: '목적 para que + 접속법', pat: 'Para que / Sin que / Antes de que + subj.', ko: '주어가 다른 목적·조건절은 접속법', ex: 'Lo explico despacio para que todos lo entiendan.', exko: '모두가 이해하도록 천천히 설명한다.' },
+  { id: 'rel', cat: '접속법', name: '불특정 선행사 + 접속법', pat: 'Necesitamos algo / alguien que + subj.', ko: '존재가 확정되지 않은 대상을 꾸미는 관계절', ex: 'Necesitamos políticas que protejan a los jóvenes.', exko: '젊은이들을 보호할 정책이 필요하다.' },
+  { id: 'ojala', cat: '접속법', name: '소망 ojalá', pat: 'Ojalá + pres. subj. / imperf. subj.', ko: '현재형=가능한 바람, 과거형=가능성 낮은 바람', ex: 'Ojalá pudiéramos cambiar las cosas más rápido.', exko: '더 빨리 바꿀 수 있으면 좋을 텐데.' },
+  { id: 'comosi', cat: '접속법', name: 'como si + 접속법 과거', pat: 'Como si + imperf./pluscuamp. subj.', ko: '마치 ~인 것처럼 (항상 접속법 과거 계열)', ex: 'Habla como si lo supiera todo.', exko: '그는 다 아는 것처럼 말한다.' },
+  { id: 'pormucho', cat: '접속법', name: 'Por mucho que + 접속법', pat: 'Por mucho que / Por más que + subj.', ko: '아무리 ~해도 (강한 양보)', ex: 'Por mucho que lo intente, no consigo madrugar.', exko: '아무리 해도 일찍 못 일어나겠다.' },
+  { id: 'cond', cat: '접속법', name: '조건 접속사 + 접속법', pat: 'A no ser que / Siempre que / Con tal de que + subj.', ko: '조건·예외를 정교하게 (si보다 B2다움)', ex: 'Iré a la reunión, a no ser que surja algo urgente.', exko: '급한 일이 생기지 않는 한 회의에 갈 거다.' },
+  // 가정문
+  { id: 'si2', cat: '가정문', name: '현재 반사실 가정', pat: 'Si + imperf. subj., condicional', ko: '지금 사실과 반대되는 가정', ex: 'Si tuviera más tiempo, aprendería a tocar el piano.', exko: '시간이 더 있다면 피아노를 배울 텐데.' },
+  { id: 'si3', cat: '가정문', name: '과거 반사실 가정', pat: 'Si + pluscuamp. subj., condicional compuesto', ko: '과거에 일어나지 않은 일의 가정 (후회·비판)', ex: 'Si hubiera estudiado más, habría aprobado.', exko: '더 공부했더라면 합격했을 텐데.' },
+  // 추측 표현
+  { id: 'fut_prob', cat: '추측 표현', name: '추측의 미래 (지금)', pat: 'Estará / Tendrá / Será + … ', ko: '지금 일에 대한 짐작 — "~겠지". creo que보다 훨씬 자연스러움', ex: 'No contesta; estará en una reunión.', exko: '전화를 안 받네, 회의 중이겠지.' },
+  { id: 'futperf_prob', cat: '추측 표현', name: '추측의 미래완료 (방금·이미)', pat: 'Habrá + participio', ko: '이미 일어났을 일에 대한 짐작 — "~했나 봐"', ex: 'Habrá perdido el autobús otra vez.', exko: '또 버스를 놓쳤나 봐.' },
+  { id: 'cond_prob', cat: '추측 표현', name: '과거 추측의 조건법', pat: 'Estaría / Serían las… (과거 일 짐작)', ko: '과거의 일에 대한 짐작 — "~였겠지"', ex: 'Cuando la llamé no contestó; estaría dormida.', exko: '전화했을 때 안 받았어, 자고 있었겠지.' },
+  { id: 'deberde', cat: '추측 표현', name: 'deber de + 원형 (추측)', pat: 'Debe de + inf. / Debía de + inf.', ko: 'deber + inf.는 의무, deber de + inf.는 추측', ex: 'Debe de ser difícil vivir tan lejos de tu familia.', exko: '가족과 그렇게 멀리 사는 건 분명 힘들 거야.' },
+  // 과거 시제
+  { id: 'pluscuam', cat: '과거 시제', name: '대과거로 시간 순서', pat: 'Cuando + indefinido, ya + pluscuamperfecto', ko: '"그보다 더 전에" 일어난 일을 표시', ex: 'Cuando llegué, la película ya había empezado.', exko: '내가 도착했을 때 영화는 이미 시작했었다.' },
+  { id: 'llevaba', cat: '과거 시제', name: '과거 배경 + 사건', pat: 'Llevaba + 기간 + gerundio cuando + indefinido', ko: '불완료(진행 중이던 배경) + 단순과거(끼어든 사건)', ex: 'Llevaba tres años en Madrid cuando conocí a Lucía.', exko: '마드리드에 산 지 3년째였을 때 루시아를 만났다.' },
+  // 간접화법
+  { id: 'indirecto', cat: '간접화법', name: '간접 요청·충고 + 접속법 과거', pat: 'Me pidió / Me aconsejó que + imperf. subj.', ko: '과거의 요청·충고를 전달할 때', ex: 'Mi profesora me aconsejó que leyera más prensa.', exko: '선생님이 신문을 더 읽으라고 조언했다.' },
+  { id: 'indir_fut', cat: '간접화법', name: '간접화법: 미래 → 조건법', pat: 'Dijo que + condicional', ko: '"~할게"라고 한 말을 전할 때. mañana → al día siguiente', ex: 'Me dijo que me llamaría al día siguiente.', exko: '다음 날 전화하겠다고 했다.' },
+  { id: 'indir_past', cat: '간접화법', name: '간접화법: 완료·과거 → 대과거', pat: 'Me contó que + pluscuamperfecto', ko: '"~했어"라고 한 말을 전할 때', ex: 'Me contó que había dejado su trabajo.', exko: '그는 일을 그만뒀다고 내게 말했다.' },
+  { id: 'indir_q', cat: '간접화법', name: '간접 의문문', pat: 'Me preguntó si / qué / cuándo + 직설법', ko: '예/아니오 질문은 si, 의문사 질문은 의문사 그대로 (악센트 유지)', ex: 'Me preguntó si quería ir con ellos.', exko: '같이 가고 싶냐고 내게 물었다.' },
+  // 변화 동사
+  { id: 'ponerse', cat: '변화 동사', name: 'ponerse + 형용사', pat: 'ponerse nervioso / triste / rojo', ko: '일시적인 감정·외모 변화', ex: 'Me puse muy nerviosa antes de la entrevista.', exko: '면접 전에 아주 긴장했다.' },
+  { id: 'volverse', cat: '변화 동사', name: 'volverse + 형용사', pat: 'volverse loco / desconfiado / egoísta', ko: '성격이 근본적으로, 대개 갑작스럽게 변함', ex: 'Desde que es famoso, se ha vuelto muy desconfiado.', exko: '유명해진 뒤로 그는 의심이 많아졌다.' },
+  { id: 'hacerse', cat: '변화 동사', name: 'hacerse + 명사/형용사', pat: 'hacerse rico / vegetariano / famoso', ko: '의지나 시간을 들인 변화 (직업·신념·부)', ex: 'Se hizo vegetariana hace dos años.', exko: '그녀는 2년 전에 채식주의자가 됐다.' },
+  { id: 'quedarse', cat: '변화 동사', name: 'quedarse + 형용사', pat: 'quedarse sin palabras / sorprendido / solo', ko: '어떤 사건 뒤에 남은 결과 상태', ex: 'Me quedé sin palabras cuando me lo contó.', exko: '그 얘기를 들었을 때 할 말을 잃었다.' },
+  { id: 'convertirse', cat: '변화 동사', name: 'convertirse en / llegar a ser', pat: 'convertirse en + 명사 / llegar a ser + 명사', ko: '완전히 다른 것으로 변신 / 긴 과정 끝에 도달', ex: 'El pueblo se ha convertido en un destino turístico.', exko: '그 마을은 관광지가 되었다.' },
+  // 동사 우언법
+  { id: 'llevar_ger', cat: '동사 우언법', name: 'llevar + 기간 + 현재분사', pat: 'Llevo + tiempo + gerundio', ko: '~한 지 (얼마)째 — hace… que보다 자연스러움', ex: 'Llevo dos años estudiando español por mi cuenta.', exko: '독학으로 스페인어 공부한 지 2년째다.' },
+  { id: 'seguir_ger', cat: '동사 우언법', name: 'seguir + 현재분사 / seguir sin + 원형', pat: 'Sigo + gerundio / Sigo sin + inf.', ko: '여전히 ~하다 / 여전히 ~ 못 하다', ex: 'Sigo sin entender por qué lo hizo.', exko: '그가 왜 그랬는지 아직도 이해가 안 된다.' },
+  { id: 'volver_a', cat: '동사 우언법', name: 'volver a + 원형', pat: 'volver a + inf.', ko: '다시 ~하다 (otra vez보다 B2다움)', ex: 'No volveré a cometer el mismo error.', exko: '같은 실수를 다시는 하지 않겠다.' },
+  { id: 'dejar_de', cat: '동사 우언법', name: 'dejar de / ponerse a + 원형', pat: 'dejar de + inf. / ponerse a + inf.', ko: '~을 그만두다 / (갑자기) ~하기 시작하다', ex: 'He dejado de mirar el móvil antes de dormir.', exko: '자기 전에 휴대폰 보는 걸 그만뒀다.' },
+  { id: 'ir_ger', cat: '동사 우언법', name: 'ir + 현재분사 (점점)', pat: 'ir + gerundio', ko: '변화가 조금씩 진행됨', ex: 'La situación va empeorando poco a poco.', exko: '상황이 조금씩 나빠지고 있다.' },
+  { id: 'llegar_a', cat: '동사 우언법', name: 'llegar a + 원형 (심지어)', pat: 'llegar a + inf.', ko: '극단에 이르기까지 ~하다', ex: 'Llegué a pensar que nunca lo conseguiría.', exko: '절대 못 해낼 거라고까지 생각했다.' },
+  { id: 'a_punto', cat: '동사 우언법', name: 'estar a punto de + 원형', pat: 'estar a punto de + inf.', ko: '막 ~하려던 참 (과거 배경에 자주)', ex: 'Estaba a punto de rendirme cuando me llamaron.', exko: '포기하려던 참에 연락이 왔다.' },
+  // 대명사·lo
+  { id: 'se_invol', cat: '대명사·lo', name: '비의지의 se', pat: 'Se me olvidó / Se me cayó / Se nos acabó', ko: '"저절로 그렇게 됐다" — 책임을 덜어내는 원어민식 표현', ex: 'Se me olvidaron las llaves en la oficina.', exko: '사무실에 열쇠를 깜빡 두고 왔다.' },
+  { id: 'duplic', cat: '대명사·lo', name: '목적어 앞으로 + 대명사 중복', pat: 'Esto ya lo sabía / A mí me…', ko: '목적어를 문장 앞으로 빼면 대명사를 한 번 더', ex: 'Ese libro lo leí el verano pasado.', exko: '그 책은 지난여름에 읽었다.' },
+  { id: 'lo_adj', cat: '대명사·lo', name: '중성 lo + 형용사', pat: 'Lo bueno / Lo peor / Lo curioso es que…', ko: '추상적인 "~한 점"을 명사처럼 — 의견문 필수', ex: 'Lo curioso es que nadie se dio cuenta.', exko: '신기한 건 아무도 눈치채지 못했다는 거다.' },
+  { id: 'lo_que_es', cat: '대명사·lo', name: 'lo + 형용사 + que (얼마나)', pat: 'No sabes lo + adj. + que + verbo', ko: '"얼마나 ~한지" 감탄·강조', ex: 'No te imaginas lo difícil que es encontrar piso.', exko: '집 구하는 게 얼마나 어려운지 상상도 못 할 거야.' },
+  // 관계사
+  { id: 'rel_prep', cat: '관계사', name: '전치사 + el que / la cual', pat: 'La razón por la que… / El barrio en el que…', ko: '전치사가 붙는 관계절 — que 하나로 버티는 습관 탈출', ex: 'Esa es la razón por la que decidí mudarme.', exko: '그게 내가 이사하기로 한 이유다.' },
+  { id: 'lo_cual', cat: '관계사', name: 'lo cual / lo que (앞 문장 전체)', pat: ', lo cual + verbo', ko: '앞 문장 전체를 받아 평가를 덧붙임', ex: 'Llegó tarde otra vez, lo cual me molestó bastante.', exko: '그는 또 늦었고, 그게 꽤 거슬렸다.' },
+  { id: 'cuyo', cat: '관계사', name: 'cuyo/a/os/as (소유)', pat: 'sustantivo + cuyo/a + sustantivo', ko: '"그의/그것의 ~" — 뒤 명사에 성수 일치', ex: 'Es una escritora cuyas novelas me encantan.', exko: '소설이 정말 좋은 작가다.' },
+  // 무인칭·축약
+  { id: 'pasiva', cat: '무인칭·축약', name: '무인칭·수동 se', pat: 'Se ha demostrado que… / Se debería + inf.', ko: '논증문에서 주어를 숨기고 객관적 톤 만들기', ex: 'Se ha demostrado que leer en papel mejora la comprensión.', exko: '종이로 읽는 것이 이해를 높인다는 것이 입증됐다.' },
+  { id: 'ser_part', cat: '무인칭·축약', name: 'ser + 과거분사 (격식 수동)', pat: 'fue aprobado / será construido (por…)', ko: '뉴스·보고서체. 일상에선 se 수동이 더 흔함', ex: 'El proyecto fue aprobado por unanimidad.', exko: '그 프로젝트는 만장일치로 승인됐다.' },
+  { id: 'al_inf', cat: '무인칭·축약', name: 'al + 원형 (~할 때)', pat: 'Al + inf., …', ko: 'cuando절을 짧게 압축', ex: 'Al llegar a casa, me di cuenta de que había perdido la cartera.', exko: '집에 도착했을 때 지갑을 잃어버린 걸 알았다.' },
+  { id: 'de_inf', cat: '무인칭·축약', name: 'de + haber + 과거분사 (가정 축약)', pat: 'De haberlo sabido, + condicional compuesto', ko: 'Si lo hubiera sabido와 같은 뜻, 더 세련됨', ex: 'De haberlo sabido, habría venido antes.', exko: '알았더라면 더 일찍 왔을 텐데.' },
+  { id: 'part_abs', cat: '무인칭·축약', name: '절대 분사구문', pat: 'Terminada la reunión, … / Una vez + participio, …', ko: '"~가 끝나고/~한 뒤" — 문어체 고급', ex: 'Terminada la reunión, nos fuimos a cenar.', exko: '회의가 끝나고 저녁 먹으러 갔다.' },
+  // 비교·강조
+  { id: 'cuanto', cat: '비교·강조', name: 'cuanto más… más…', pat: 'Cuanto más + verbo, más + verbo', ko: '~할수록 더 ~하다', ex: 'Cuanto más leo, más cuenta me doy de lo poco que sé.', exko: '읽을수록 내가 얼마나 모르는지 깨닫는다.' },
+  { id: 'tan_que', cat: '비교·강조', name: 'tan / tanto… que (결과)', pat: 'tan + adj. + que / tanto + sust. + que', ko: '너무 ~해서 ~했다', ex: 'Estaba tan cansada que me dormí en el metro.', exko: '너무 피곤해서 지하철에서 잠들었다.' },
+  { id: 'enfasis', cat: '비교·강조', name: '강조 구문 es… donde/quien/cuando', pat: 'Es + 강조 요소 + donde / quien / cuando…', ko: '"~인 것은 바로 ~이다" — 논점을 또렷하게', ex: 'Es en los detalles donde se nota la calidad.', exko: '품질이 드러나는 건 바로 디테일에서다.' },
+  { id: 'serestar', cat: '비교·강조', name: '의미가 바뀌는 ser/estar 형용사', pat: 'ser listo / estar listo · ser rico / estar rico · ser malo / estar malo', ko: 'ser=성질, estar=상태 — 형용사 뜻 자체가 달라짐', ex: 'Mi hermano es muy listo, pero nunca está listo a tiempo.', exko: '형은 아주 똑똑한데 제시간에 준비된 적이 없다.' },
+  // 연결어
+  { id: 'conect', cat: '연결어', name: '논증 연결어', pat: 'No obstante, Por consiguiente, Cabe destacar que, En definitiva', ko: 'pero/porque/entonces만 쓰면 B1 — 글의 층위를 올리는 연결어', ex: 'Cabe destacar, no obstante, que los datos son limitados.', exko: '다만 데이터가 제한적이라는 점은 짚어둘 만하다.' },
+  { id: 'conect_causa', cat: '연결어', name: '원인·결과 연결어', pat: 'ya que, dado que, debido a / por lo tanto, de ahí que + subj.', ko: 'porque/entonces 대신. de ahí que 뒤는 접속법', ex: 'Dado que los precios suben, cada vez más jóvenes viven con sus padres.', exko: '물가가 오르니 부모와 사는 젊은이가 점점 늘고 있다.' },
+  { id: 'conect_contra', cat: '연결어', name: '대조·양보 연결어', pat: 'sin embargo, en cambio, a pesar de que, si bien', ko: 'pero/aunque 대신. si bien은 격식 있는 양보', ex: 'Si bien la idea es buena, su aplicación resulta complicada.', exko: '아이디어는 좋지만 적용이 복잡하다.' },
 ];
 const GRAM_BY_ID = {}; GRAM_B2.forEach(g => GRAM_BY_ID[g.id] = g);
 function pickMissions(n, exclude) {
-  // 덜 연습했고 성공률 낮은 구조 우선 + 약간의 무작위
+  // 덜 연습했고 성공률 낮은 구조 우선 + 무작위, 서로 다른 묶음에서 하나씩
   const ms = S.stats.mission || {};
-  const scored = GRAM_B2.filter(g => !(exclude || []).includes(g.id)).map(g => { const m = ms[g.id] || { try: 0, ok: 0 }; return { g, score: m.try * 2 + m.ok * 3 + Math.random() * 4 }; });
+  const scored = GRAM_B2.filter(g => !(exclude || []).includes(g.id)).map(g => { const m = ms[g.id] || { try: 0, ok: 0 }; return { g, score: m.try * 2 + m.ok * 3 + Math.random() * 6 }; });
   scored.sort((a, b) => a.score - b.score);
-  return scored.slice(0, n).map(x => x.g.id);
+  const out = [], cats = new Set();
+  for (const x of scored) { if (cats.has(x.g.cat)) continue; out.push(x.g.id); cats.add(x.g.cat); if (out.length >= n) break; }
+  return out;
 }
 function missionBox(e, editable) {
   if (!e.mission || !e.mission.length) return '';
   return `<div class="card" style="border-color:#e9c6c2"><b>🎯 오늘의 B2 문법 미션</b> <span class="sub">이 구조를 글에 꼭 한 번씩 넣어보세요</span>` +
-    e.mission.map(id => { const g = GRAM_BY_ID[id]; if (!g) return ''; return `<div class="err" style="border-left-color:var(--blue);background:#f5f8fc"><b>${esc(g.name)}</b><br><span style="font-family:monospace;font-size:13px">${esc(g.pat)}</span><br><span class="sub">${esc(g.ko)}</span><br>예) <i>${esc(g.ex)}</i> <button class="speak-btn" onclick="speak(GRAM_BY_ID['${g.id}'].ex)">🔊</button><br><span class="sub">${esc(g.exko)}</span></div>`; }).join('') +
-    (editable ? `<div class="pill-group"><button class="ghost sm" onclick="rerollMission()">🎲 다른 미션</button><button class="ghost sm" onclick="showGrammarBook()">📘 B2 구조 전체 보기</button></div>` : '') + `</div>`;
+    e.mission.map(id => { const g = GRAM_BY_ID[id]; if (!g) return ''; return `<div class="err" style="border-left-color:var(--blue);background:#f5f8fc"><span class="tag" style="background:#e3edf8;color:var(--blue);font-size:11px">${esc(g.cat)}</span> <b>${esc(g.name)}</b><br><span style="font-family:monospace;font-size:13px">${esc(g.pat)}</span><br><span class="sub">${esc(g.ko)}</span><br>예) <i>${esc(g.ex)}</i> <button class="speak-btn" onclick="speak(GRAM_BY_ID['${g.id}'].ex)">🔊</button><br><span class="sub">${esc(g.exko)}</span></div>`; }).join('') +
+    (editable ? `<div class="pill-group"><button class="ghost sm" onclick="rerollMission()">🎲 다른 미션</button><button class="ghost sm" onclick="showGrammarBook()">📘 B2 구조 사전</button></div>` : '') + `</div>`;
 }
-function showGrammarBook() {
+let gbCat = null;
+function showGrammarBook(cat) {
+  if (cat !== undefined) gbCat = cat;
   const ms = S.stats.mission || {};
-  openOverlay(`<h2>📘 DELE B2 핵심 구조 ${GRAM_B2.length}개</h2><p>B2 작문 채점에서 '문법 범위·정확성'은 이 구조들을 상황에 맞게 골라 쓰는지로 갈려요. 🔊로 예문을 듣고 그대로 따라 써보세요.</p>` +
-    GRAM_B2.map(g => { const m = ms[g.id]; return `<div class="err" style="border-left-color:var(--blue);background:#f5f8fc"><b>${esc(g.name)}</b> ${m ? `<span class="tag ${m.ok ? 'green' : ''}">성공 ${m.ok}/${m.try}</span>` : ''}<br><span style="font-family:monospace;font-size:12px">${esc(g.pat)}</span><br><span class="sub">${esc(g.ko)}</span><br><i>${esc(g.ex)}</i> <button class="speak-btn" onclick="speak(GRAM_BY_ID['${g.id}'].ex)">🔊</button></div>`; }).join('') +
-    `<button class="flip" onclick="closeOverlay()">닫기</button>`);
+  const cnt = c => GRAM_B2.filter(g => g.cat === c).length;
+  let h = `<h2>📘 DELE B2 구조 사전 (${GRAM_B2.length}개)</h2><p>B2 작문 채점에서 '문법 범위·정확성'은 이 구조들을 상황에 맞게 골라 쓰는지로 갈려요. 묶음을 골라 🔊로 예문을 듣고 내 얘기로 바꿔 써보세요.</p>
+    <div class="pill-group" style="margin-bottom:10px"><span class="pill ${!gbCat ? 'on' : ''}" onclick="showGrammarBook(null)">전체</span>` +
+    GRAM_CATS.map(c => `<span class="pill ${gbCat === c.id ? 'on' : ''}" onclick="showGrammarBook('${c.id}')">${c.id} ${cnt(c.id)}</span>`).join('') + `</div>`;
+  const cats = gbCat ? GRAM_CATS.filter(c => c.id === gbCat) : GRAM_CATS;
+  cats.forEach(c => {
+    h += `<div style="margin-top:14px"><b style="font-size:15px">${esc(c.id)}</b><div class="sub">${esc(c.desc)}</div></div>`;
+    h += GRAM_B2.filter(g => g.cat === c.id).map(g => { const m = ms[g.id]; return `<div class="err" style="border-left-color:var(--blue);background:#f5f8fc"><b>${esc(g.name)}</b> ${m ? `<span class="tag ${m.ok ? 'green' : ''}">성공 ${m.ok}/${m.try}</span>` : ''}<br><span style="font-family:monospace;font-size:12px">${esc(g.pat)}</span><br><span class="sub">${esc(g.ko)}</span><br><i>${esc(g.ex)}</i> <button class="speak-btn" onclick="speak(GRAM_BY_ID['${g.id}'].ex)">🔊</button><br><span class="sub">${esc(g.exko)}</span></div>`; }).join('');
+  });
+  h += `<button class="flip" onclick="closeOverlay()">닫기</button>`;
+  const box = $('overlayBox'); const keep = $('overlay').classList.contains('show') ? box.scrollTop : 0;
+  openOverlay(h); if (cat !== undefined) box.scrollTop = 0; else box.scrollTop = keep;
 }
 let wrView = { mode: 'home', id: null };
 function newEntry(mode, articleId) {
@@ -660,7 +737,7 @@ ${e.text.trim()}
 2. errors: 중요한 오류만 최대 6개. 사소한 건 corrected에만 반영. why는 한국어 1~2문장.
    type은 다음 중 하나: ${ERR_TYPES.join(', ')}
 3. mission_check: 미션 구조마다 하나씩, 위 순서대로. used(시도했는지), correct(맞게 썼는지), found(글에서 해당 문장, 없으면 ""), fix(틀렸으면 고친 문장, 안 썼으면 이 글 맥락에 맞게 그 구조로 쓴 예문), note(한국어 한 줄).
-4. upgrades: 학습자 문장 중 단순한 문장(직설법만, pero/porque/es importante 반복, 짧은 단문 나열) 3~4개를 골라 같은 뜻을 B2 구조(접속법 명사절·부사절·관계절, 가정문, 양보, 무인칭 se, 고급 연결어 등)로 끌어올린 문장. orig(학습자 원문), up(업그레이드 문장, 학습자가 외워 쓸 수 있는 길이), structure(구조 이름, 예: "Es fundamental que + 접속법"), why(왜 이 구조가 더 B2다운지 한국어 1문장).
+4. upgrades: 학습자 문장 중 단순한 문장(직설법만, pero/porque/es importante 반복, creo que 남발, 짧은 단문 나열) 3~4개를 골라 같은 뜻을 B2 구조로 끌어올린 문장. 접속법만 쓰지 말고 다양하게: 접속법·가정문, 추측의 미래/조건법(estará, habrá + p.p.), 대과거, 간접화법 시제 일치, 변화 동사(ponerse/volverse/hacerse/quedarse/convertirse en), 동사 우언법(llevar + 현재분사, volver a, dejar de, seguir sin), 비의지 se, 중성 lo(lo bueno es que), 전치사+관계사·lo cual·cuyo, 무인칭 se·al + 원형·de haber + p.p.·절대 분사구문, cuanto más…, 강조 구문, 고급 연결어(dado que, de ahí que, si bien) 중 이 문장에 가장 자연스러운 것을 골라. orig(학습자 원문), up(업그레이드 문장, 학습자가 외워 쓸 수 있는 길이), structure(구조 이름, 예: "Es fundamental que + 접속법"), why(왜 이 구조가 더 B2다운지 한국어 1문장).
 5. native: 문법은 맞지만 직역투·교과서투라 원어민에게 어색한 표현 2~4개를 원어민이 실제로 쓰는 말로. orig, native, why(뉘앙스·연어(collocation)·연결어·구어/문어 톤 차이를 한국어로). 스페인 스페인어 기준, 중남미와 다르면 why에 짧게 덧붙여.
 6. natural: 위 업그레이드와 원어민 톤을 반영한 전체 글. 학습자 글보다 한 단계 위(B2+)지만 학습자가 흉내 낼 수 있는 수준으로.
 7. cards: 외워두면 좋을 문장 3~5개. 고친 문장과 업그레이드 문장을 섞어서 (es 완전한 문장, ko 자연스러운 뜻, point 핵심 한 줄).
