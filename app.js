@@ -1,7 +1,7 @@
 /* 문장장 스튜디오 v3 — 스페인어 전용 PWA
    오늘(SRS) · 연습(받아쓰기/말하기/드릴/롤플레이) · 읽기(주간 시사 팩) · 쓰기(일기 + Claude 첨삭) · 기록 */
 'use strict';
-const APP_VERSION = '3.3.0';
+const APP_VERSION = '3.3.1';
 const LS_KEY = 'estudio_v3';
 const LEVELS = ['B1', 'B2', 'C1'];
 const INTERVALS = [0, 1, 3, 7, 16, 35, 80];
@@ -74,14 +74,29 @@ function pickVoice() {
   const pool = pref.length ? pref : es;
   return pool.find(v => /premium|enhanced|mejorada/i.test(v.name)) || pool.find(v => /m[oó]nica|jorge|marisol/i.test(v.name)) || pool[0];
 }
+let curUtter = null, ttsWarned = false; // iOS 사파리는 발화 객체가 GC되면 소리가 끊김 → 전역에 붙잡아 둠
 function speak(text, onend) {
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
+  if (!('speechSynthesis' in window)) { toast('이 브라우저는 음성 읽기를 지원하지 않아요'); return; }
+  const ss = window.speechSynthesis;
+  if (!voices.length) loadVoices();
   const u = new SpeechSynthesisUtterance(text);
   const v = pickVoice(); if (v) u.voice = v;
-  u.lang = 'es-ES'; u.rate = ttsRate;
-  if (onend) u.onend = onend;
-  speechSynthesis.speak(u);
+  u.lang = (v && v.lang) || 'es-ES'; u.rate = ttsRate;
+  let started = false;
+  u.onstart = () => { started = true; };
+  u.onend = () => { if (curUtter === u) curUtter = null; if (onend) onend(); };
+  u.onerror = e => { if (curUtter === u) curUtter = null; if (e.error !== 'interrupted' && e.error !== 'canceled') toast('음성 재생 오류: ' + e.error); };
+  curUtter = u;
+  const go = () => {
+    try { ss.resume(); } catch (_) { }   // iOS: 백그라운드 다녀오면 '일시정지'에 걸려 있는 경우
+    ss.speak(u);
+    setTimeout(() => { if (!started && curUtter === u && !ss.speaking) { // 시작 자체가 안 됨 → 한 번 더
+      try { ss.cancel(); ss.resume(); } catch (_) { } ss.speak(u);
+      if (!ttsWarned) { ttsWarned = true; setTimeout(() => { if (!started) toast('소리가 안 나면: 아이폰 무음 모드를 끄고 볼륨을 올려주세요. 설정 › 손쉬운 사용 › 음성 콘텐츠 › 음성에서 스페인어 음성을 받아두면 더 잘 돼요.', 6000); }, 1200); }
+    } }, 900);
+  };
+  if (ss.speaking || ss.pending) { ss.cancel(); setTimeout(go, 80); } // iOS: cancel 직후 바로 speak하면 무시됨
+  else go();
 }
 function speakId(id) { const c = BY_ID[id]; if (c) speak(c.text); }
 let seqActive = false;
